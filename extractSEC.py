@@ -8,7 +8,7 @@ Created on Thu Jan 28 09:48:19 2021
 #pip install secedgar
 
 from secedgar.filings import Filing, FilingType
-from secedgar.filings.cik_lookup import CIKLookup
+from secedgar.cik_lookup import CIKLookup
 
 import urllib
 
