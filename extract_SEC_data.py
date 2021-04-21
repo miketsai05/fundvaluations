@@ -1,4 +1,4 @@
-
+# LOOP THROUGH EACH URL AND EXTRACT LVL3 INVESTMENT DATA
 
 #pip install secedgar
 
@@ -12,6 +12,7 @@ import xml.etree.ElementTree as ET
 
 
 def getSection(data1, tag):
+    """ Given SEC filing as data1, returns subsection of data1 between <tag> and </tag>"""
     startInd = data1.find(tag)
     endtag = tag[0] + "/" + tag[1:]
     endInd = data1.find(endtag) + len(endtag) + 1
@@ -19,6 +20,8 @@ def getSection(data1, tag):
     return data2
 
 def xml2list(data2, df_cols, twolevel_cols):
+    """ Given subsection of SEC filing data, parses XML data into list of lists"""
+
     # df_cols should be list
     # twolevel_cols should be dict with keyword/column list pairing - first look for attribute, if none then check for value else returns None
 
@@ -56,10 +59,12 @@ def xml2list(data2, df_cols, twolevel_cols):
     return rows
 
 def getLine(data1, label_str):
-  startInd = data1.find(label_str)
-  endInd = data1.find("\n",startInd)
-  data2 = data1[startInd+len(label_str):endInd].strip()
-  return data2
+    """ Given SEC filing as data1, returns line starting with given string label_str"""
+
+    startInd = data1.find(label_str)
+    endInd = data1.find("\n",startInd)
+    data2 = data1[startInd+len(label_str):endInd].strip()
+    return data2
 
 # Look up list of filing URLs
 
@@ -68,20 +73,20 @@ def getLine(data1, label_str):
 
 # test_filing = Filing(cik,filing_type=FilingType.FILING_NPORT, start_date='20200630', count=2)
 
-f = open('T_Rowe.txt', 'r')
-all_ciks = f.read()
-f.close()
 
-all_ciks = all_ciks.splitlines()
-all_ciks = all_ciks[1:]
-
-ciks = [item.zfill(10) for item in all_ciks] #CIKLookup(all_ciks)
-
-all_urls = Filing(ciks[70], filing_type=FilingType.FILING_NPORTP).get_urls() #break this up into multiple requests
-
-print(all_urls)
 
 # Start to loop through all filings
+
+    urlfilename = "master_urls.pkl"
+    master_urls = pd.read_pickle(urlfilename)
+
+    filename = 'master_CIKs.pkl'
+    CIK_cols = ['CIK','Name','Fund','get_urls_date','lvl3']
+
+    if path.exists(filename):
+        master_CIKs = pd.read_pickle(filename)
+    else:
+        master_CIKs = pd.DataFrame(columns=CIK_cols)
 
 all_filings = []
 all_holdings = []
@@ -172,3 +177,17 @@ print(all_holdings.head())
 # test.head(10)
 
 # whos
+
+# TESTING
+# f = open('CIKs/T_Rowe.txt', 'r')
+# all_ciks = f.read()
+# f.close()
+#
+# all_ciks = all_ciks.splitlines()
+# all_ciks = all_ciks[1:]
+#
+# ciks = [item.zfill(10) for item in all_ciks] #CIKLookup(all_ciks)
+#
+# all_urls = Filing(ciks[70], filing_type=FilingType.FILING_NPORTP).get_urls() #break this up into multiple requests
+#
+# print(all_urls)
