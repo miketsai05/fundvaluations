@@ -5,8 +5,10 @@
 #from secedgar.filings import Filing, FilingType
 #from secedgar.cik_lookup import CIKLookup
 
-import urllib
+#import urllib
+import requests
 from os import path
+import time
 
 import pandas as pd
 import xml.etree.ElementTree as ET
@@ -71,11 +73,8 @@ def xml2list(data2, df_cols, twolevel_cols):
 
     return rows
 
-def getData(url, df_cols, twolevel_cols, Lvl3only = True):
-    """ Extracts relevant holding data given SEC filing URL"""
-
-    req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
-    data1 = urllib.request.urlopen(req).read().decode('utf-8')
+def getData(data1, df_cols, twolevel_cols, Lvl3only = True):
+    """ Extracts relevant holding data given SEC filing data"""
 
     # Getting filing information
     accessNum = getLine(data1,"ACCESSION NUMBER:")
@@ -120,21 +119,34 @@ def main():
 
     # Loop through urls in master_urls and extract relevant SEC data from each filing
     # update master_urls row and append holdings data to master_holdings
+
+    s = requests.Session()
+    s.headers.update({'User-Agent': 'Mozilla/5.0'})
+
     for ind in master_urls.index:
 
         if master_urls.loc[ind,'CIK'] != lastCIK: #comment out
             print(master_urls.loc[ind,'CIK'])
 
-        if ind%100 == 0:
+        if ind%50 == 0:
             print(ind)
 
         if master_urls.loc[ind,'accessNum'] == None:
-            accessNum, valDate, fileDate, holdings = getData(master_urls.loc[ind,'filingURL'], df_cols, twolevel_cols)
+
+            #req = urllib.request.Request(master_urls.loc[ind,'filingURL'], headers={'User-Agent': 'Mozilla/5.0'})
+            #data1 = urllib.request.urlopen(req).read().decode('utf-8')
+
+            url = master_urls.loc[ind, 'filingURL']
+            data1 = s.get(url).text
+
+            accessNum, valDate, fileDate, holdings = getData(data1, df_cols, twolevel_cols)
             master_urls.loc[ind, 'accessNum'] = accessNum
             master_urls.loc[ind, 'valDate'] = valDate
             master_urls.loc[ind, 'fileDate'] = fileDate
 
             master_holdings = master_holdings.append(holdings, ignore_index = True)
+
+            time.sleep(1)
 
         lastCIK = master_urls.loc[ind,'CIK'] #comment out
 
@@ -153,6 +165,9 @@ if __name__ == "__main__":
 #cik = CIKLookup(['T. Rowe Price Science & Technology Fund, Inc.'])
 
 # test_filing = Filing(cik,filing_type=FilingType.FILING_NPORT, start_date='20200630', count=2)
+
+#test_url = 'https://www.sec.gov/Archives/edgar/data/819930/000175272420248026/0001752724-20-248026.txt'
+
 
 # all_filings = []
 # all_holdings = []
