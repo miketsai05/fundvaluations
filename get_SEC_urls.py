@@ -103,7 +103,7 @@ def getURLs(end_date = datetime.today()):
 
     #for ind, cik in master_CIKs.iloc[1:6].iterrows():
     for ind, cik in master_CIKs.iterrows():
-        print(ind)
+        #print(ind)
         not_updated = cik.get_urls_date is None or cik.get_urls_date<end_date
 
         if cik.lvl3 and not_updated:
@@ -143,8 +143,13 @@ def main():
 def temp():
     CIKfilename = "master_CIKs.pkl"
     master_CIKs = pd.read_pickle(CIKfilename)
+
     urlfilename = "master_urls.pkl"
     master_urls = pd.read_pickle(urlfilename)
+
+    holdingsfilename = "master_holdings.pkl"
+    master_holdings = pd.read_pickle(holdingsfilename)
+
     master_CIKs = master_CIKs.iloc[0:94]
     master_CIKs.to_pickle(CIKfilename)
 
