@@ -81,9 +81,17 @@ def getData(data1, df_cols, twolevel_cols, Lvl3only = True):
     tag = "<invstOrSecs>"
     data2 = getSection(data1, tag)
 
-    holdings = xml2list(data2, df_cols, twolevel_cols)
-    if Lvl3only:
-        holdings = [dict for dict in holdings if dict['fairValLevel']=='3']
+    if data2 != '':
+        holdings = xml2list(data2, df_cols, twolevel_cols)
+
+        if Lvl3only:
+            holdings = [item for item in holdings if item['fairValLevel'] == '3']
+
+        holdings = [dict(item, accessNum=accessNum) for item in holdings]
+
+    else:
+        print('SEC filing accession number: '+accessNum+' has no holdings data')
+        holdings = {}
 
     return accessNum, valDate, fileDate, holdings
 
@@ -108,7 +116,7 @@ def main():
     if path.exists(holdingsfilename):
         master_holdings = pd.read_pickle(holdingsfilename)
     else:
-        master_holdings = pd.DataFrame(columns=all_cols)
+        master_holdings = pd.DataFrame(columns=['accessNum']+all_cols)
 
     lastCIK = "" #comment out
 
@@ -135,8 +143,8 @@ def main():
                 master_urls.to_pickle(urlfilename)
                 master_holdings.to_pickle(holdingsfilename)
 
-            #req = urllib.request.Request(master_urls.loc[ind,'filingURL'], headers={'User-Agent': 'Mozilla/5.0'})
-            #data1 = urllib.request.urlopen(req).read().decode('utf-8')
+            # if ind>=13144 and ind<13200:
+            #     print(ind)
 
             url = master_urls.loc[ind, 'filingURL']
             data1 = s.get(url).text
@@ -148,7 +156,7 @@ def main():
 
             master_holdings = master_holdings.append(holdings, ignore_index = True)
 
-        time.sleep(0.2) #SEC rate limit 10 requests / sec - slight buffer to be safe here
+            time.sleep(0.2) #SEC rate limit 10 requests / sec - slight buffer to be safe here
 
         lastCIK = master_urls.loc[ind,'CIK'] #comment out
 
