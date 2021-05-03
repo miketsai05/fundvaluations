@@ -15,7 +15,7 @@ import time
 
 def create_dfs():
     cikfilename = 'master_ciks.pkl'
-    cik_cols = ['CIK', 'Name', 'Fund', 'get_urls_date', 'lvl3']
+    cik_cols = ['CIK', 'Manager Name', 'Fund', 'get_urls_date', 'lvl3']
     if ~path.exists(cikfilename):
         master_ciks = pd.DataFrame(columns=cik_cols)
         master_ciks.to_pickle(cikfilename)
