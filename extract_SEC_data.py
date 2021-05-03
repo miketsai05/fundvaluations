@@ -8,22 +8,25 @@ import pyautogui
 import pandas as pd
 import xml.etree.ElementTree as ET
 
-def getLine(data1, label_str):
+
+def get_line(data1, label_str):
     """ Given SEC filing as data1, returns remainder of line starting with given string label_str"""
 
-    startInd = data1.find(label_str)
-    endInd = data1.find("\n", startInd)
-    data2 = data1[startInd+len(label_str):endInd].strip()
+    start_ind = data1.find(label_str)
+    end_ind = data1.find("\n", start_ind)
+    data2 = data1[start_ind+len(label_str):end_ind].strip()
     return data2
 
-def getSection(data1, tag):
+
+def get_section(data1, tag):
     """ Given SEC filing as data1, returns subsection of data1 between <tag> and </tag> inclusive"""
 
-    startInd = data1.find(tag)
+    start_ind = data1.find(tag)
     endtag = tag[0] + "/" + tag[1:]
-    endInd = data1.find(endtag) + len(endtag) + 1
-    data2 = data1[startInd:endInd]
+    end_ind = data1.find(endtag) + len(endtag) + 1
+    data2 = data1[start_ind:end_ind]
     return data2
+
 
 def xml2list(data2, df_cols, twolevel_cols):
     """ Given subsection of SEC filing data, parses XML data into list of lists
@@ -68,23 +71,24 @@ def xml2list(data2, df_cols, twolevel_cols):
 
     return rows
 
-def getData(data1, df_cols, twolevel_cols, Lvl3only = True):
+
+def get_data(data1, df_cols, twolevel_cols, lvl3only=True):
     """ Extracts relevant holding data given SEC filing data"""
 
     # Getting filing information
-    accessNum = getLine(data1,"ACCESSION NUMBER:")
-    valDate = getSection(data1, "<repPdDate>")[11:-13]
-    fileDate = getLine(data1, "FILED AS OF DATE:")
-    fileDate = fileDate[0:4]+'-'+fileDate[4:6]+'-'+fileDate[6:8]
+    accessNum = get_line(data1, "ACCESSION NUMBER:")
+    val_date = get_section(data1, "<repPdDate>")[11:-13]
+    file_date = get_line(data1, "FILED AS OF DATE:")
+    file_date = file_date[0:4]+'-'+file_date[4:6]+'-'+file_date[6:8]
 
     # Getting holding level information
     tag = "<invstOrSecs>"
-    data2 = getSection(data1, tag)
+    data2 = get_section(data1, tag)
 
     if data2 != '':
         holdings = xml2list(data2, df_cols, twolevel_cols)
 
-        if Lvl3only:
+        if lvl3only:
             holdings = [item for item in holdings if item['fairValLevel'] == '3']
 
         holdings = [dict(item, accessNum=accessNum) for item in holdings]
@@ -93,7 +97,7 @@ def getData(data1, df_cols, twolevel_cols, Lvl3only = True):
         print('SEC filing accession number: '+accessNum+' has no holdings data')
         holdings = {}
 
-    return accessNum, valDate, fileDate, holdings
+    return accessNum, val_date, file_date, holdings
 
 
 def main():
@@ -118,7 +122,7 @@ def main():
     else:
         master_holdings = pd.DataFrame(columns=['accessNum']+all_cols)
 
-    lastCIK = "" #comment out
+    lastcik = ""  #comment out
 
     # Loop through urls in master_urls and extract relevant SEC data from each filing
     # update master_urls row and append holdings data to master_holdings
@@ -128,10 +132,10 @@ def main():
 
     for ind in master_urls.index:
 
-        if master_urls.loc[ind,'CIK'] != lastCIK: #comment out
-            print(master_urls.loc[ind,'CIK']) #comment out
+        if master_urls.loc[ind, 'CIK'] != lastcik:  #comment out
+            print(master_urls.loc[ind, 'CIK'])  #comment out
 
-        if master_urls.loc[ind,'accessNum'] == None:
+        if master_urls.loc[ind, 'accessNum'] == None:
 
             if ind % 100 == 0:
                 print(ind)  # comment out
@@ -149,21 +153,21 @@ def main():
             url = master_urls.loc[ind, 'filingURL']
             data1 = s.get(url).text
 
-            accessNum, valDate, fileDate, holdings = getData(data1, df_cols, twolevel_cols)
+            accessNum, val_date, file_date, holdings = get_data(data1, df_cols, twolevel_cols)
             master_urls.loc[ind, 'accessNum'] = accessNum
-            master_urls.loc[ind, 'valDate'] = valDate
-            master_urls.loc[ind, 'fileDate'] = fileDate
+            master_urls.loc[ind, 'valDate'] = val_date
+            master_urls.loc[ind, 'fileDate'] = file_date
 
-            master_holdings = master_holdings.append(holdings, ignore_index = True)
+            if holdings:
+                master_holdings = master_holdings.append(holdings, ignore_index=True)
 
-            time.sleep(0.2) #SEC rate limit 10 requests / sec - slight buffer to be safe here
+            time.sleep(0.2)  #SEC rate limit 10 requests / sec - slight buffer to be safe here
 
-        lastCIK = master_urls.loc[ind,'CIK'] #comment out
+        lastcik = master_urls.loc[ind, 'CIK']  #comment out
 
     master_urls.to_pickle(urlfilename)
     master_holdings.to_pickle(holdingsfilename)
 
+
 if __name__ == "__main__":
     main()
-
-
