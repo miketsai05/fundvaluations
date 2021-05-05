@@ -15,7 +15,7 @@ import time
 
 def create_dfs():
     cikfilename = 'master_ciks.pkl'
-    cik_cols = ['CIK', 'Manager Name', 'Fund', 'get_urls_date', 'lvl3']
+    cik_cols = ['CIK', 'fundManager', 'Fund', 'get_urls_date', 'lvl3']
     if ~path.exists(cikfilename):
         master_ciks = pd.DataFrame(columns=cik_cols)
         master_ciks.to_pickle(cikfilename)
@@ -29,7 +29,7 @@ def create_dfs():
 
 def load_ciks():
     """Open each csv file in CIKs folder, extract CIKs and stores
-     [10 digit CIK, Fund Manager Name, Fund, latest date for URL grab]
+     [10 digit CIK, Fund Manager, Fund, latest date for URL grab]
      in master_CIKs pkl for each fund manager"""
 
     cikfilename = 'master_ciks.pkl'
