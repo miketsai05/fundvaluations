@@ -95,7 +95,7 @@ def select_unicorns():
     unicorn_data_grouped.to_pickle('unicorn_data_grouped')
 
 
-def gen_graph(unicorn_name):
+def gen_fig(unicorn_name):
 
     unicorn_data_grouped = pd.read_pickle('unicorn_data_grouped')
     gdata = unicorn_data_grouped[unicorn_data_grouped['unicorn'] == unicorn_name].copy()
@@ -133,7 +133,7 @@ def gen_graph(unicorn_name):
 
     fig.update_traces(
             #mode='lines+markers',
-            marker_symbol='square',
+            #marker_symbol='square',
             #marker_opacity=1,
             opacity=0.6,
             hovertemplate=
@@ -146,6 +146,10 @@ def gen_graph(unicorn_name):
             hoverlabel=None
     )
 
+    return fig
+
+def gen_graph(unicorn_name):
+    fig = gen_fig(unicorn_name)
     plotly.offline.plot(fig, filename='plotlygraph.html')
 
     # Separate each Fund Manager into a different trace so hover works even if same per share valuation
