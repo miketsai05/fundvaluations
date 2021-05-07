@@ -47,7 +47,7 @@ def load_ciks():
         all_ciks = all_ciks.splitlines()
         all_ciks = all_ciks[1:]
         all_ciks = [item.split(',', maxsplit=1) for item in all_ciks]
-        all_ciks = [[item[0].zfill(10), fund_manager, item[1], datetime(1990, 1, 1), None] for item in all_ciks]
+        all_ciks = [[item[0].zfill(10), fund_manager, item[1].replace('"',''), datetime(1990, 1, 1), None] for item in all_ciks]
 
         new_ciks = pd.DataFrame([cik for cik in all_ciks if cik[0] not in list(master_ciks.CIK)], columns=master_ciks.columns)
 

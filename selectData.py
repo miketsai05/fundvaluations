@@ -81,20 +81,25 @@ def select_unicorns():
     for i in range(len(datecols)):
         unicorn_data[datecols[i]] = pd.to_datetime(unicorn_data[datecols[i]])
 
+    unicorn_data['pershare'] = (unicorn_data['valUSD']/unicorn_data['balance']).round(2)
+
+    # Concatenate Fund and Series before groupby
+
+    cols = ['unicorn', 'fundManager', 'valDate', 'pershare']
+    f = {'balance': 'sum', 'Fund': ',<br>'.join, 'name':','.join, 'title':','.join, 'filingURL':','.join}
+
+    unicorn_data_grouped = unicorn_data.groupby(cols, as_index=False).agg(f)
+    unicorn_data_grouped['normbalance'] = np.log10(unicorn_data_grouped['balance']) # unicorn_data_grouped['balance']**0.35
+
     unicorn_data.to_pickle('unicorn_data')
+    unicorn_data_grouped.to_pickle('unicorn_data_grouped')
 
 
 def gen_graph(unicorn_name):
 
-    unicorn_data = pd.read_pickle('unicorn_data')
-    rdata = unicorn_data[unicorn_data['unicorn'] == unicorn_name].copy()
-    rdata['pershare'] = (rdata['valUSD']/rdata['balance']).round(2)
-
-    cols = ['fundManager', 'valDate', 'pershare', 'name', 'title']
-    f = {'balance': 'sum', 'Fund': ','.join}
-    gdata = rdata.groupby(cols, as_index=False).agg(f)
-
-    gdata['normbalance'] = np.log(gdata['balance'].astype(float))
+    unicorn_data_grouped = pd.read_pickle('unicorn_data_grouped')
+    gdata = unicorn_data_grouped[unicorn_data_grouped['unicorn'] == unicorn_name].copy()
+    gdata['valDatestr'] = gdata['valDate'].dt.strftime('%b %d, %Y')
 
     fig = px.scatter(gdata,
                      x='valDate',
@@ -103,7 +108,8 @@ def gen_graph(unicorn_name):
                      size='normbalance',
                      color='fundManager',
                      template='simple_white',
-                     hover_name='fundManager'
+                     hover_name='fundManager',
+                     custom_data=['valDatestr', 'balance', 'Fund']
                      )
 
     fig.update_layout(
@@ -112,25 +118,43 @@ def gen_graph(unicorn_name):
             xaxis_dtick='M1',
             xaxis_tickformat='%b %d<br>%Y',
             yaxis_title='Per Share Valuation',
+            yaxis_tickformat='$.2f',
+            yaxis_rangemode='tozero',
+            legend_title='Fund Manager',
             title={
                 'x': 0.5,
                 'y': 0.9,
                 'xanchor': 'center',
                 'yanchor': 'top',
                 'font_family': 'Arial',
-                'font_size': 28
+                'font_size': 28,
             }
     )
 
     fig.update_traces(
-            mode='lines+markers',
-            marker_symbol='diamond',
-            marker_opacity=1,
-            opacity=0.6
+            #mode='lines+markers',
+            marker_symbol='square',
+            #marker_opacity=1,
+            opacity=0.6,
+            hovertemplate=
+                '<b>%{hovertext}</b><br><br>'
+                'Valuation Date: %{customdata[0]}<br>'
+                'Per Share Valuation: %{y:$0.2f}<br>'
+                'Number of Shares: %{customdata[1]:0,000}<br><br>'
+                'Held By: <br>%{customdata[2]}'
+                '<extra></extra>',
+            hoverlabel=None
     )
 
     plotly.offline.plot(fig, filename='plotlygraph.html')
 
+    # Separate each Fund Manager into a different trace so hover works even if same per share valuation
+    # Fund Manager specific color throughout
+    # Facet Row by fund manager
+    # add annotations for funding round
+
+
+# fig.update_traces(hovertemplate = '<b>%{hovertext}</b><br>Valuation Date = %{x}<br>Per Share Valuation = %{y}<br>Number of Shares = %{hover_data[0]}')
 
 if __name__ == "__main__":
     select_unicorns()
@@ -150,3 +174,5 @@ if __name__ == "__main__":
 # From select_unicorns: AccessNum, Name, Title, balance, curCd, valUSD, Unicorn Name
 # From master_urls: CIK, filingURL, AccessNum, valDate, fileDate (ALL COLUMNS)
 # From master_ciks: CIK, Manager Name, Fund
+
+# CHECK SPACE X
