@@ -4,7 +4,7 @@
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
-import plotly.express as px
+import dash_table as dt
 import pandas as pd
 from dash.dependencies import Input, Output
 import selectData as sd
@@ -25,7 +25,26 @@ fig = sd.gen_fig('Bytedance')
 unicornsfilename = 'master_unicorns.xlsx'
 master_unicorns = pd.read_excel(unicornsfilename)
 master_unicorns = master_unicorns.where(pd.notnull(master_unicorns), None)
-uni_list = [{'label': x, 'value': x} for x in master_unicorns.loc[0:30,'Company Name']]
+
+moneyformat = dt.FormatTemplate.money(2)
+numformat = dt.Format(precision=0, scheme=dt.Scheme.fixed).group(True)
+
+cols = ['unicorn', 'fundManager', 'valDate', 'pershare', 'balance', 'Fund', 'name', 'title', 'filingURL']
+colnames = ['Company', 'Fund Manager', 'Valuation Date', 'Per Share Valuation', 'Number of Shares', 'Fund', 'Holding Name', 'Holding Title']
+coltype = ['text', 'text', 'datetime', 'numeric', 'numeric', 'text', 'text', 'text']
+colpresentation = ['input', 'input', 'input', 'input', 'input', 'markdown', 'input', 'input']
+dt_cols = [{'name':x, 'id':y, 'type':z, 'presentation':a} for x, y, z, a in zip(colnames, cols[:-1], coltype, colpresentation)]
+
+
+unicorn_data = pd.read_pickle('unicorn_data')
+
+def gen_table(unicorn_name):
+    tmptable = unicorn_data[unicorn_data['unicorn']==unicorn_name][cols].copy()
+    tmptable['Fund'] = '['+tmptable['Fund'].astype(str)+']('+tmptable['filingURL'].astype(str)+')'
+    return tmptable
+
+
+table1 = gen_table('Bytedance')
 
 app.layout = html.Div([
 
@@ -49,8 +68,19 @@ app.layout = html.Div([
         )
     ,style={'width': '79%', 'display': 'inline-block', 'vertical-align': 'top'}),
 
+    html.Div(
+        dt.DataTable(
+            id = 'table1',
+            columns = dt_cols,
+            data = table1.to_dict('records')
+        )
+    )
 
 ])
+
+
+
+
 
 # add toggle to change size of points on graph
 
@@ -61,6 +91,12 @@ app.layout = html.Div([
 def update_graph(input_value):
     return sd.gen_fig(input_value)
 
+@app.callback(
+    Output(component_id='table1', component_property='data'),
+    Input(component_id='company-input', component_property='value')
+)
+def update_table(input_value):
+    return gen_table(input_value).to_dict('records')
 
 if __name__ == '__main__':
     app.run_server(debug=True)

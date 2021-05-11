@@ -137,11 +137,11 @@ def gen_fig(unicorn_name):
             #marker_opacity=1,
             opacity=0.6,
             hovertemplate=
-                '<b>%{hovertext}</b><br><br>'
-                'Valuation Date: %{customdata[0]}<br>'
-                'Per Share Valuation: %{y:$0.2f}<br>'
-                'Number of Shares: %{customdata[1]:0,000}<br><br>'
-                'Held By: <br>%{customdata[2]}'
+                '<b>Fund Manager:</b> %{hovertext}<br>'
+                '<b>Valuation Date:</b> %{customdata[0]}<br>'
+                '<b>Per Share Valuation:</b> %{y:$0.2f}<br>'
+                '<b>Aggregate Number of Shares:</b> %{customdata[1]:0,000}<br><br>'
+                '<b>Held By:</b> <br>%{customdata[2]}'
                 '<extra></extra>',
             hoverlabel=None
     )
