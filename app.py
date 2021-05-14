@@ -10,14 +10,31 @@ import pandas as pd
 import selectData as sd
 
 def gen_table(unicorn_name):
+    cols = ['unicorn', 'fundManager', 'valDate', 'pershare', 'balance', 'Fund', 'name', 'title', 'filingURL'] #don't need this in both functions
     tmptable = unicorn_data[unicorn_data['unicorn']==unicorn_name][cols].copy()
     tmptable['Fund'] = '['+tmptable['Fund'].astype(str)+']('+tmptable['filingURL'].astype(str)+')'
     tmptable['valDate'] = tmptable['valDate'].dt.date
     return tmptable
 
-external_stylesheets = [dbc.themes.LUMEN] # ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
-app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
+def gen_table_format():
+    cols = ['unicorn', 'fundManager', 'valDate', 'pershare', 'balance', 'Fund', 'name', 'title', 'filingURL'] #repeated above
+    colnames = ['Company', 'Fund Manager', 'Valuation Date', 'Per Share Valuation', 'Number of Shares', 'Fund',
+                'Holding Name', 'Holding Title']
+    coltype = ['text', 'text', 'datetime', 'numeric', 'numeric', 'text', 'text', 'text']
+    colpresentation = ['input', 'input', 'input', 'input', 'input', 'markdown', 'input', 'input']
+
+    dt_cols = [{'name': x, 'id': y, 'type': z, 'presentation': a} for x, y, z, a in
+               zip(colnames, cols[:-1], coltype, colpresentation)]
+
+    moneyformat = FormatTemplate.money(2)
+    numformat = Format(precision=0, scheme=Scheme.fixed).group(True)
+
+    dt_cols[3]['format'] = moneyformat
+    dt_cols[4]['format'] = numformat
+
+    return dt_cols
+
 
 unicornsfilename = 'master_unicorns.xlsx'
 master_unicorns = pd.read_excel(unicornsfilename)
@@ -25,29 +42,13 @@ master_unicorns = master_unicorns.where(pd.notnull(master_unicorns), None)
 unicornset = master_unicorns.loc[0:30,'Company Name']
 unicorn_data = pd.read_pickle('unicorn_data')
 
-cols = ['unicorn', 'fundManager', 'valDate', 'pershare', 'balance', 'Fund', 'name', 'title', 'filingURL']
-colnames = ['Company', 'Fund Manager', 'Valuation Date', 'Per Share Valuation', 'Number of Shares', 'Fund', 'Holding Name', 'Holding Title']
-coltype = ['text', 'text', 'datetime', 'numeric', 'numeric', 'text', 'text', 'text']
-colpresentation = ['input', 'input', 'input', 'input', 'input', 'markdown', 'input', 'input']
-
-dt_cols = [{'name':x, 'id':y, 'type':z, 'presentation':a} for x, y, z, a in zip(colnames, cols[:-1], coltype, colpresentation)]
-
-moneyformat = FormatTemplate.money(2)
-numformat = Format(precision=0, scheme=Scheme.fixed).group(True)
-
-dt_cols[3]['format'] = moneyformat
-dt_cols[4]['format'] = numformat
-
+external_stylesheets = [dbc.themes.LUMEN] # ['https://codepen.io/chriddyp/pen/bWLwgP.css']
+app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
 
 app.layout = html.Div([
 
     dcc.Store(id='table-memory'),
-
-    # html.H1(
-    #     'SEC Reported Valuations',
-    #     style={'textAlign': 'center'}
-    # ),
 
     dbc.NavbarSimple([
         dbc.NavItem(dbc.NavLink("Home", href="#")),
@@ -118,7 +119,7 @@ app.layout = html.Div([
     html.Div(
         dt.DataTable(
             id='table1',
-            columns=dt_cols,
+            columns=gen_table_format(),
             style_header={'fontWeight': 'bold', 'whiteSpace': 'normal', 'padding-left': '5px', 'padding-right': '5px'},
             style_cell={'textAlign': 'center'},
             sort_action='native',
@@ -126,7 +127,6 @@ app.layout = html.Div([
     )
 
 ])
-
 
 
 # add toggle to change size of points on graph

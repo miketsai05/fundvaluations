@@ -1,3 +1,7 @@
+# NEED TO DISTINGUISH ==>>
+# UNITS = NS is number of shares, PA is principal amount
+# assetCat = LON is LOAN, EC is Equity-common
+
 # FOR GIVEN COMPANY - FIND RELEVANT SEC FILING DATA FROM MASTER_HOLDINGS.PKL
 
 # set up pages with logos for all unicorns - doing top 30 first
@@ -37,18 +41,20 @@ def merge_data(select_holdings):
     urlfilename = "master_urls.pkl"
     master_urls = pd.read_pickle(urlfilename)
 
-    unicorn_data = select_holdings[holdings_cols]
-    unicorn_data = unicorn_data.merge(master_urls, how='left', on='accessNum')
-    unicorn_data = unicorn_data.merge(master_ciks[cik_cols], how='left', on='CIK')
+    data_merged = select_holdings[holdings_cols]
+    data_merged = data_merged.merge(master_urls, how='left', on='accessNum')
+    data_merged = data_merged.merge(master_ciks[cik_cols], how='left', on='CIK')
 
     numcols = ['balance','valUSD']
-    unicorn_data[numcols] = unicorn_data[numcols].astype(float)
+    data_merged[numcols] = data_merged[numcols].astype(float)
 
     datecols = ['valDate', 'fileDate']
     for i in range(len(datecols)):
-        unicorn_data[datecols[i]] = pd.to_datetime(unicorn_data[datecols[i]])
+        data_merged[datecols[i]] = pd.to_datetime(data_merged[datecols[i]])
 
-    unicorn_data['pershare'] = (unicorn_data['valUSD']/unicorn_data['balance']).round(2)
+    data_merged['pershare'] = (data_merged['valUSD']/data_merged['balance']).round(2)
+
+    return data_merged
 
 
 def group_data(merged_data):
@@ -64,6 +70,8 @@ def group_data(merged_data):
 
     data_grouped = merged_data.groupby(cols, as_index=False).agg(f)
     data_grouped['normbalance'] = np.log10(data_grouped['balance'])
+
+    return data_grouped
 
 
 def search_unicorns(co_name, aka, legal_name, search_legal=False, threshold=0.5):
@@ -112,9 +120,9 @@ def select_unicorns():
 
         tmp_list.append(tmp)
 
-    select_unicorns = pd.concat(tmp_list, ignore_index=True)
+    select_data = pd.concat(tmp_list, ignore_index=True)
 
-    unicorn_data = merge_data(select_unicorns)
+    unicorn_data = merge_data(select_data)
     unicorn_data_grouped = group_data(unicorn_data)
 
     unicorn_data.to_pickle('unicorn_data')
