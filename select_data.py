@@ -1,6 +1,30 @@
 # NEED TO DISTINGUISH ==>>
-# UNITS = NS is number of shares, PA is principal amount
-# assetCat = LON is LOAN, EC is Equity-common
+# UNITS = NS is number of shares,
+#         PA is principal amount,
+#         NC is number of contracts,
+#         OU is other units
+# assetCat =
+        # 'ABS-CBDO' - ABS-collateralized bond/debt obligation
+        #  'ABS-MBS' - ABS-mortgage backed security
+        #  'ABS-O' - ABS-other
+        #  'DBT' - debt
+        #  'DCO' - derivative-commodity
+        #  'DCR' - derivative-credit
+        #  'DE' - derivative-equity
+        #  'DIR' - derivative-interest rate
+        #  'EC' - equity-common
+        #  'EP' - equity preferred
+        #  'LON' - loan
+        #  'None'
+        #  'SN' - structured note
+        #  'STIV' - short-term investment vehicle (e.g., money market fund, liquidity pool, or other cash management vehicle
+
+# Asset type (short-term investment vehicle (e.g., money market fund, liquidity pool,
+# or other cash management vehicle), repurchase agreement, equity-common, equity-preferred,
+# debt, derivative-commodity, derivative-credit, derivative-equity, derivative-foreign exchange,
+# derivative-interest rate, derivatives-other, structured note, loan, ABS-mortgage backed security,
+# ABS-asset backed commercial paper, ABS-collateralized bond/debt obligation, ABS-other,
+# commodity, real estate, other). If “other,” provide a brief description.
 
 # FOR GIVEN COMPANY - FIND RELEVANT SEC FILING DATA FROM MASTER_HOLDINGS.PKL
 
@@ -14,31 +38,32 @@ import numpy as np
 
 
 def search_select(search_name):
-    """ Looks up relevant records from master_holdings.pkl given search term """
+    """ Looks up relevant records from master_holdings.pkl given search term returns a copy of the data"""
 
     # Should I pass in master_holdings as a dataframe rather than open each time?? TBD
 
-    holdingsfilename = "master_holdings.pkl"
+    holdingsfilename = "data/master_holdings.pkl"
     master_holdings = pd.read_pickle(holdingsfilename)
 
     ind1 = master_holdings['name'].str.lower().str.contains(search_name.lower())
     ind2 = master_holdings['title'].str.lower().str.contains(search_name.lower())
 
-    search_results = master_holdings[ind1|ind2]
+    search_results = master_holdings[ind1|ind2].copy()
 
     return search_results
 
 
-def merge_data(select_holdings):
+def merge_data(select_holdings, unicornflag=False):
     """ Merges holding data with URL data and CIK data """
 
-    holdings_cols = ['accessNum', 'name', 'title', 'balance', 'curCd', 'valUSD', 'unicorn']
+    holdings_cols = ['accessNum', 'name', 'title', 'balance', 'curCd', 'valUSD']
+    if unicornflag: holdings_cols.append('unicorn')
     cik_cols = ['CIK', 'fundManager', 'Fund']
 
-    cikfilename = "master_ciks.pkl"
+    cikfilename = "data/master_ciks.pkl"
     master_ciks = pd.read_pickle(cikfilename)
 
-    urlfilename = "master_urls.pkl"
+    urlfilename = "data/master_urls.pkl"
     master_urls = pd.read_pickle(urlfilename)
 
     data_merged = select_holdings[holdings_cols]
@@ -57,15 +82,16 @@ def merge_data(select_holdings):
     return data_merged
 
 
-def group_data(merged_data):
+def group_data(merged_data, unicornflag=False):
     """ Groups merged data for better visual in plotly graph. Converts certain columns and normalizes balance data
-      From select_unicorns: AccessNum, Name, Title, balance, curCd, valUSD, Unicorn Name
+      From merged_data input: AccessNum, Name, Title, balance, curCd, valUSD, Unicorn Name
       From master_urls: CIK, filingURL, AccessNum, valDate, fileDate (ALL COLUMNS)
       From master_ciks: CIK, Manager Name, Fund """
 
     # Concatenate Fund and Series before groupby?
 
-    cols = ['unicorn', 'fundManager', 'valDate', 'pershare']
+    cols = ['fundManager', 'valDate', 'pershare']
+    if unicornflag: cols = ['unicorn']+cols
     f = {'balance': 'sum', 'Fund': ',<br>'.join, 'name':','.join, 'title':','.join, 'filingURL':','.join}
 
     data_grouped = merged_data.groupby(cols, as_index=False).agg(f)
@@ -79,7 +105,7 @@ def search_unicorns(co_name, aka, legal_name, search_legal=False, threshold=0.5)
 
     # Should I pass in master_holdings as a dataframe rather than open each time?? TBD
 
-    holdingsfilename = "master_holdings.pkl"
+    holdingsfilename = "data/master_holdings.pkl"
     master_holdings = pd.read_pickle(holdingsfilename)
 
     ind1 = master_holdings['name'].str.lower().str.contains(co_name.lower())
@@ -104,7 +130,7 @@ def select_unicorns():
     Concats all records, merges with URL and CIK data and groups by name, fund manager, valdate and price.
     Saves both selected merged records and grouped data"""
 
-    unicornsfilename = 'master_unicorns.xlsx'
+    unicornsfilename = 'data/master_unicorns.xlsx'
     master_unicorns = pd.read_excel(unicornsfilename)
     master_unicorns = master_unicorns.where(pd.notnull(master_unicorns), None)
 
@@ -122,23 +148,27 @@ def select_unicorns():
 
     select_data = pd.concat(tmp_list, ignore_index=True)
 
-    unicorn_data = merge_data(select_data)
-    unicorn_data_grouped = group_data(unicorn_data)
+    unicorn_data = merge_data(select_data, unicornflag=True)
+    unicorn_data_grouped = group_data(unicorn_data, unicornflag=True)
 
-    unicorn_data.to_pickle('unicorn_data')
-    unicorn_data_grouped.to_pickle('unicorn_data_grouped')
+    unicorn_data.to_pickle('data/unicorn_data')
+    unicorn_data_grouped.to_pickle('data/unicorn_data_grouped')
 
 
 def gen_fig(unicorn_name):
 
-    unicorn_data_grouped = pd.read_pickle('unicorn_data_grouped')
+    unicorn_data_grouped = pd.read_pickle('data/unicorn_data_grouped')
     gdata = unicorn_data_grouped[unicorn_data_grouped['unicorn'] == unicorn_name].copy()
+
+    return gen_fig_fromgdata(gdata, unicorn_name)
+
+def gen_fig_fromgdata(gdata, graphtitle=''):
     gdata['valDatestr'] = gdata['valDate'].dt.strftime('%b %d, %Y')
 
     fig = px.scatter(gdata,
                      x='valDate',
                      y='pershare',
-                     title=unicorn_name,
+                     title=graphtitle,
                      size='normbalance',
                      color='fundManager',
                      template='simple_white',
@@ -182,9 +212,6 @@ def gen_fig(unicorn_name):
 
     return fig
 
-def gen_graph(unicorn_name):
-    fig = gen_fig(unicorn_name)
-    plotly.offline.plot(fig, filename='plotlygraph.html')
 
     # Separate each Fund Manager into a different trace so hover works even if same per share valuation
     # Fund Manager specific color throughout
@@ -194,5 +221,5 @@ def gen_graph(unicorn_name):
 
 if __name__ == "__main__":
     select_unicorns()
-    unicorn_data = pd.read_pickle('unicorn_data')
+    unicorn_data = pd.read_pickle('data/unicorn_data')
 
