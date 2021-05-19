@@ -11,8 +11,10 @@ from dash_table.Format import Format, Scheme
 import dash_bootstrap_components as dbc
 import pandas as pd
 import select_data as sd
+from apps.navbar import gen_navbar
 
 from app import app
+
 
 def gen_table(unicorn_name):
     cols = ['unicorn', 'fundManager', 'valDate', 'pershare', 'balance', 'Fund', 'name', 'title', 'filingURL'] #don't need this in both functions
@@ -53,27 +55,7 @@ layout = html.Div([
 
     dcc.Store(id='table-memory'),
 
-    dbc.NavbarSimple([
-        dbc.NavItem(dbc.NavLink("Home", href="#")),
-        dbc.DropdownMenu(
-            children=[
-                dbc.DropdownMenuItem("Summary List", href='#'),
-                dbc.DropdownMenuItem("Individual", href='/apps/app_unicorn'),
-            ],
-            nav=True,
-            in_navbar=True,
-            label='Unicorns',
-        ),
-        dbc.NavItem(dbc.NavLink('Search All',href='/apps/app_search'))
-        ],
-        brand="SEC Reported Valuations",
-        brand_style={'font-size': 32},
-        brand_href="#",
-        color="primary",
-        dark=True,
-        sticky='top',
-        style={'font-size': 18}
-    ),
+    gen_navbar(),
 
     html.Div([
         html.Label('Company Name'),
@@ -178,6 +160,6 @@ def filter_table(selectmanager, selectdate, data):
     tmptable = tmptable[tmptable['fundManager'].isin(selectmanager) & tmptable['valDate'].isin(selectdate)]
     return tmptable.to_dict('records')
 
-
-if __name__ == '__main__':
-    app.run_server(debug=True)
+#
+# if __name__ == '__main__':
+#     app.run_server(debug=True)

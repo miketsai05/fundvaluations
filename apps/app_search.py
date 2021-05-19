@@ -1,6 +1,3 @@
-#need to add code for case of no records returned
-#show debt as separate table as percentage of par split based on NS vs PA
-
 import dash
 from dash.dependencies import Input, Output, State
 import dash_core_components as dcc
@@ -11,8 +8,10 @@ from dash_table.Format import Format, Scheme
 import dash_bootstrap_components as dbc
 import pandas as pd
 import select_data as sd
+from apps.navbar import gen_navbar
 
 from app import app
+
 
 def gen_table(search_name):
     cols = ['fundManager', 'valDate', 'pershare', 'balance', 'Fund', 'name', 'title', 'filingURL'] #don't need this in both functions
@@ -49,37 +48,19 @@ def gen_table_format():
 
 # app.layout = html.Div([
 
+#add note that only showing level 3 holdings. once public, shares indicaitons no longer presented
+
 layout = html.Div([
 
     dcc.Store(id='table-memory2'),
 
-    dbc.NavbarSimple([
-        dbc.NavItem(dbc.NavLink("Home", href="#")),
-        dbc.DropdownMenu(
-            children=[
-                dbc.DropdownMenuItem("Summary List", href="#"),
-                dbc.DropdownMenuItem("Individual", href='/apps/app_unicorn'),
-            ],
-            nav=True,
-            in_navbar=True,
-            label='Unicorns',
-        ),
-        dbc.NavItem(dbc.NavLink('Search All',href='/apps/app_search'))
-        ],
-        brand="SEC Reported Valuations",
-        brand_style={'font-size': 32},
-        brand_href="#",
-        color="primary",
-        dark=True,
-        sticky='top',
-        style={'font-size': 18}
-    ),
+    gen_navbar(),
 
     dbc.Row(
         [
             dbc.Input(
                 id="search-input2",
-                placeholder="Search all mutual fund valuations...3",
+                placeholder="Search among Level 3 holdings from N-PORT filings for key word",
                 type="search",
                 style={'width': '30%', 'display': 'inline-block', 'padding-right': '10px'},
                 # debounce=True
@@ -188,5 +169,5 @@ def filter_table(selectmanager, selectdate, data):
     return tmptable.to_dict('records')
 
 
-if __name__ == '__main__':
-    app.run_server(debug=True)
+# if __name__ == '__main__':
+#     app.run_server(debug=True)

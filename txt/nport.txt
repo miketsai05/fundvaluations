@@ -1,0 +1,52 @@
+Private equity markets have changed dramatically in recent years with firms staying private longer than ever.
+With this shift has been an increasing trend of pre-IPO participation by crossover investors including many mutual funds.
+Although, unlike public markets, there is no definitive answer as to the tick by tick valuation of a private company,
+mutual fund valuations are one of the few observable data points the public has that point to what the company’s shares are worth (or at least what mutual funds think they are).
+This project is intended to help aggregate, visualize and surface level 3 fair values from SEC NPORT filing data starting sep 30, 2019. 
+
+
+
+What is Form NPORT?
+
+
+In October 2016, the SEC adopted the Investment Company Reporting Modernization rule, introducing Form N-PORT to replace the previously required Form N-Q.
+
+Form N-PORT requires funds to report complete portfolio holdings detail on a position by position basis.
+
+Form N-PORT - RICs must submit monthly reports although only the quarter end N-PORT is made available to the public
+submission deadline - 60 days after the end of each fiscal quarter
+
+The compliance timeline for larger fund groups began with quarter ending Mar 31, 2019 and for smaller fund groups began with quarter ending Mar 31, 2020. However, the first 6 months of NPORT filings were kept private
+so the first publicly available filing begins with quarter ending sep 30, 2019.
+
+
+
+Why only NPORT
+
+Prior the Investment Company Reporting Modernization rule, mutual funds were required to submit Form N-Q
+
+Two key changes between the Form N-PORT form and the prior Form N-Q:
+
+(a) Form N-PORT reports are submitted in XML format instead of HTML format which makes date collection and analytics much easier.
+(b) Form N-PORT expands the score of required level of detail much of which was not previously required wiht FORM N-Q
+
+
+
+fidelity, trowe, hartford, blackrock, wellington
+
+
+
+
+
+The compliance timeline of Form N-PORT comes in two parts: first, the larger entities—funds that together with other investment companies in the same group of related investment companies with net assets of $1 billion or more as of the end of the most recent fiscal year of the fund (“larger fund groups”)—began reporting Form N-PORT from June 1, 2018. 
+Smaller entities are now required to start submitting via the EDGAR system from 30th April 2020. 
+There is no difference in the scope or frequency of reporting between the larger and smaller entities.
+
+
+** ADD SEPARATE LEVEL 3 explanation
+
+summary: https://www.sec.gov/divisions/investment/guidance/secg-investment-company-reporting-modernization-rules.htm
+final rule link: https://www.sec.gov/rules/final/2016/33-10231.pdf
+FAQ: https://www.sec.gov/investment/investment-company-reporting-modernization-faq#_ftnref4
+
+*as valuation is the art of triangulating data points, hopefully this helps 
