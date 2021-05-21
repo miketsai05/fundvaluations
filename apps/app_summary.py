@@ -59,7 +59,7 @@ unicorn_data = pd.read_pickle('data/unicorn_data')
 
 layout = html.Div([
 
-    dcc.Store(id='table-memory'),
+
 
     nb.gen_navbar(),
 

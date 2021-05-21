@@ -153,7 +153,8 @@ def update_graph(input_value):
     Output(component_id='table1', component_property='data'),
     Input(component_id='filterManager', component_property='value'),
     Input(component_id='filterDate', component_property='value'),
-    Input(component_id='table-memory', component_property='data')
+    Input(component_id='table-memory', component_property='data'),
+    prevent_initial_call=True
 )
 def filter_table(selectmanager, selectdate, data):
     tmptable = pd.DataFrame.from_dict(data)

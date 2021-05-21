@@ -2,7 +2,8 @@
 #explain valuations, triangulation, support details, fair value - asc820/ifrs 13
 #purpose of page, help visualize, small attempt to help improve transparency
 #largest quarter-o-Q change, biggest divergence
-#list mutual funds logos
+#list mutual funds logos - fidelity, trowe, hartford, blackrock, wellington
+#add a fund page? that lists holdings? grouped and collapsable?
 
 import dash
 import dash_core_components as dcc
@@ -19,7 +20,35 @@ from app import app
 
 
 tmptext = '1Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor.'
-imgpath = 'sec-logo.png'
+sec_imgname = 'sec-logo.png'
+
+def gen_thumbnail(imgname, url, fund):
+    return html.Div(
+        html.A(
+            html.Img(
+                src = app.get_asset_url(imgname),
+                style = {
+                    # 'object-fit': 'contain', # HOW TO GET THIS TO WORK?
+                    'max-height': '50px',
+                    'max-width': '160px',
+                    'width': 'auto',
+                    'height': 'auto',
+                    'float': 'left',
+                    'position': 'relative',
+                    'padding-bottom': 5,
+                    'padding-right': 0
+                }
+            ),
+            href=url,
+            target='_blank'
+        ),
+    )
+
+
+master_funds = pd.read_excel('data/master_funds.xlsx')
+images_div = []
+for i in range(master_funds.shape[0]):
+    images_div.append(gen_thumbnail(master_funds.logo[i], master_funds.url[i], master_funds.fund[i]))
 
 layout = html.Div([
 
@@ -29,14 +58,21 @@ layout = html.Div([
 
         dbc.Row([
 
-            dbc.Col(html.Img(src=app.get_asset_url(imgpath)), width=2),
+            dbc.Col([
+                dbc.Row(
+                    html.Div(
+                        html.Img(src=app.get_asset_url(sec_imgname)),
+                        style={'padding-bottom': '30px', 'textAlign': 'center'})
+                               #'display': 'flex', 'align-items': 'center', 'justify-content': 'center'})
+                ),
+                dbc.Row(html.P('Submissions from the following funds:'), style={'padding-bottom': '0px'}),
+                dbc.Row(images_div)],
+                width=2
+            ),
 
             dbc.Col(
                 html.Div([
-                    html.P(dcc.Markdown('''
-    # SEC Reported Valuations
-    
-    
+                    html.P(dcc.Markdown('''  
     ## Overview
     
     Private equity markets have changed dramatically in recent years with firms staying private longer than ever.
@@ -44,10 +80,10 @@ layout = html.Div([
     many mutual funds. 
     
     Although there is no definitive data source for the tick by tick valuation of a private company 
-    as there are for public markets, mutual fund valuations are one of the few observable data points the public 
-    has that can provide an indication to what these private company’s shares are valued at. 
+    as there are for public markets, mutual fund valuations provide one of the few observable data points the public 
+    can reference to provide an indication of what these private company shares are valued at. 
     
-    This project is intended to help aggregate, visualize and surface reported Level 3 Fair Values from SEC 
+    This project is intended to help aggregate, visualize and surface Level 3 fair values reported in SEC 
     N-PORT filing data starting September 30, 2019. 
     
     ## What is Form N-PORT?
@@ -57,23 +93,32 @@ layout = html.Div([
     details on a position by position basis. Registered Investment Companies (RICs) must submit monthly N-PORT 
     reports although only the fiscal quarter end N-PORT reports are made available to the public
     
-    The compliance timeline for larger fund groups began with quarter ending Mar 31, 2019 and for smaller fund 
-    groups began with quarter ending Mar 31, 2020. However, the first 6 months of N-PORT filings were kept private
-    so the first publicly available filing begins with quarter ending sep 30, 2019. The submission deadlines are 
-    60 days after each fiscal quarter end.
+    The compliance timeline for larger fund groups began with quarter ending March 31, 2019 and for smaller fund 
+    groups began with quarter ending March 31, 2020. However, the first 6 months of N-PORT filings were kept private
+    so the first publicly available N-PORT filings begin with quarter ending September 30, 2019. The submission 
+    deadlines are 60 days after each fiscal quarter end.
     
-    ## Why only Form 'N-PORT'?
+    ## Why only Form N-PORT?
     
     Prior to the Investment Company Reporting Modernization rule, mutual funds were required to submit Form N-Q.
-    Key changes between the Form N-PORT form and the prior Form N-Q include:
+    There were a number of key changes from the prior Form N-Q to the current Form N-PORT that make the 
+    reported data in Form N-PORT easier to work with including:
     * Form N-PORT reports are submitted in XML format instead of HTML format
-    * Form N-PORT expands the score of required level of detail much of which was not previously required with Form N-Q
+    * Form N-PORT expands the scope of required level of detail much of which was not previously required with Form N-Q
     * Form N-PORT are publicly available on a quarterly basis whereas Form N-Q was only required semi-annually
-    Collectively, these changes makes date collection and analytics much easier.
     
-    ## What are Level 3 Valuations?
+    ## What are Level 3 fair values?
     
-    ## Additional information:
+    Accounting standards ASC 820 and IFRS 13 establish an authoritative definition of fair value and sets out a 
+    hierarchy for measuring fair value that can be summarized as follows:
+    * Level 1: Fair value based on quoted prices in active markets for identical securities.
+    * Level 2: Fair value based on observable inputs either directly or indirectly.
+    * Level 3: Fair value based on unobservable inputs.
+    
+    There are many readily available sources for Level 1 and Level 2 valuations so this project seeks to focus on only
+    Level 3 valuations.
+    
+    ## Additional Information:
     * [Investment Company Reporting Modernization Summary][1]
     * [Investment Company Reporting Modernization Full Rule][2]
     * [Investment Company Reporting Modernization FAQ][3]

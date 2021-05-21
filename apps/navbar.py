@@ -16,7 +16,7 @@ def gen_navbar():
         ),
         dbc.NavItem(dbc.NavLink('Search All', href='/apps/app_search'))
         ],
-        brand="SEC Reported Valuations",
+        brand="SEC Reported Private Company Valuations",
         brand_style={'font-size': 32},
         brand_href="#",
         color="primary",
