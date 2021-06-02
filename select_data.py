@@ -56,7 +56,7 @@ def search_select(search_name):
 def merge_data(select_holdings, unicornflag=False):
     """ Merges holding data with URL data and CIK data """
 
-    holdings_cols = ['accessNum', 'name', 'title', 'balance', 'curCd', 'valUSD']
+    holdings_cols = ['accessNum', 'name', 'title', 'balance', 'curCd', 'valUSD', 'units', 'assetCat']
     if unicornflag: holdings_cols.append('unicorn')
     cik_cols = ['CIK', 'fundManager', 'Fund']
 

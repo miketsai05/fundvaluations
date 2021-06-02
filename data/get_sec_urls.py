@@ -1,101 +1,108 @@
 #LOAD MUTUAL FUND CIKs, CHECK IF EACH MUTUAL FUND HAS LVL3 INVESTMENTS
-# GET 30 YEARS OF SEC NPORT FILINGS STARTING 1/1/1990 FOR FUNDS WITH LVL3
-
-#pip install secedgar
+# return most recent first
+# startdate/endate relates to filing date
 
 import pandas as pd
+import numpy as np
 import urllib
 
 from secedgar.filings import Filing, FilingType
 from os import path
 from os import listdir
 from datetime import datetime
+from dateutil.relativedelta import relativedelta
 import time
+from extract_sec_data import get_line
+import requests
 
 
-def create_dfs():
-    cikfilename = 'master_ciks.pkl'
-    cik_cols = ['CIK', 'fundManager', 'Fund', 'get_urls_date', 'lvl3']
-    if ~path.exists(cikfilename):
-        master_ciks = pd.DataFrame(columns=cik_cols)
+def create_dfs(overwrite=False):
+    cikfilename = 'data/master_ciks.pkl'
+    cikexcel = 'data/master_ciks.xlsx'
+    cik_cols = ['CIK', 'infamily', 'fundfamily', 'ncen_date', 'ncen_url', 'get_urls_date', 'lvl3']
+    if ~path.exists(cikfilename) or overwrite:
+        master_ciks = pd.read_excel(cikexcel)
+        master_ciks = master_ciks.reindex( columns=master_ciks.columns.tolist()+cik_cols)
+        master_ciks['CIK'] = master_ciks['CIK Number'].zfill(10)
         master_ciks.to_pickle(cikfilename)
 
-    urlfilename = 'master_urls.pkl'
-    url_cols = ['CIK', 'filingURL', 'accessNum', 'valDate', 'fileDate']
-    if path.exists(urlfilename):
+    urlfilename = 'data/master_urls.pkl'
+    url_cols = ['CIK', 'filingURL', 'accessNum', 'seriesid', 'valDate', 'fileDate']
+    if ~path.exists(urlfilename) or overwrite:
         master_urls = pd.DataFrame(columns=url_cols)
         master_urls.to_pickle(urlfilename)
 
+    seriesexcel = 'data/master_______'
 
-def load_ciks():
-    """Open each csv file in CIKs folder, extract CIKs and stores
-     [10 digit CIK, Fund Manager, Fund, latest date for URL grab]
-     in master_CIKs pkl for each fund manager"""
 
-    cikfilename = 'master_ciks.pkl'
+def get_ncen_data(data1):
+
+    filedate = infam = fam = np.nan
+    filedate = get_line(data1, 'FILED AS OF DATE:')
+    tmpfam = get_line(data1, 'isRegistrantFamilyInvComp')
+    if tmpfam[2]=='Y':
+        infam = 'Y'
+        fam = tmpfam[27:-3]
+    elif tmpfam[1]=='N':
+        infam = 'N'
+    else:
+        infam = 'flag'
+
+    return filedate, infam, fam
+
+
+def check_ncen():
+
+    # separate CIK and Series - need to track both
+    # loop through CIK, pull N-CEN FORM. check for fund family
+    # get all nport filings for 12/31/2020 date - check level 3 there.
+    # check annually when SEC releases mutual fund file
+
+    cikfilename = 'data/master_ciks.pkl'
     master_ciks = pd.read_pickle(cikfilename)
 
-    #Loop through CIK csv files in CIKs folder and extract CIK info
-    for csv_file in listdir('CIKs/'):
+    cikstopull = list(master_ciks['CIK Number'].astype(str))
+    rowidx = list(master_ciks['CIK Number'].index)
+    ncen_urls = Filing(cikstopull, filing_type=FilingType.FILING_NCEN, end_date=datetime.today(), count=1).get_urls()
 
-        fund_manager = csv_file.replace('.csv', '').replace('_', ' ')
+    s = requests.Session()
+    s.headers.update({'User-Agent': 'Mozilla/5.0'})
 
-        f = open('CIKs/'+csv_file, 'r')
-        all_ciks = f.read()
-        f.close()
+    for cik, row in zip(cikstopull, rowidx):
+        url = ncen_urls[cik][0]
+        data1 = s.get(url).text
+        filedate, infam, fam = get_ncen_data(data1)
+        master_ciks.loc[row, ['infamily', 'fundfamily', 'ncen_date', 'ncen_url']] = infam, fam, filedate, url
 
-        all_ciks = all_ciks.splitlines()
-        all_ciks = all_ciks[1:]
-        all_ciks = [item.split(',', maxsplit=1) for item in all_ciks]
-        all_ciks = [[item[0].zfill(10), fund_manager, item[1].replace('"',''), datetime(1990, 1, 1), None] for item in all_ciks]
+    #save master_ciks
 
-        new_ciks = pd.DataFrame([cik for cik in all_ciks if cik[0] not in list(master_ciks.CIK)], columns=master_ciks.columns)
+# when looping through nport filings for filing url need to store SEries # in addition to val date
 
-        master_ciks = master_ciks.append(new_ciks, ignore_index=True)
+def check_lvl3(check_date=datetime(2020, 12, 31)):
 
-        master_ciks.to_pickle(cikfilename)
-
-
-def get_lvl3():
-    """ Loop through each CIK in master_CIKs pkl file and check if each fund CIK contains and level 3 investments
-    """
-
-    cikfilename = "master_ciks.pkl"
+    cikfilename = 'data/master_ciks.pkl'
     master_ciks = pd.read_pickle(cikfilename)
 
-    #for given CIK check for level 3 if haven't previously checked for level 3
-    for ind, cik in master_ciks.iterrows():
+    cikstopull = list(master_ciks[master_ciks['lvl3']!=True]['CIK Number'].astype(str))
+    rowidx = list(master_ciks[master_ciks['lvl3']!=True]['CIK Number'].index)
+    nport_urls = Filing(cikstopull,
+        filing_type=FilingType.FILING_NPORTP,
+        count=1,
+        start_date=check_date,
+        end_date=check_date+relativedelta(months=3)).get_urls()
 
-        if cik.lvl3 is None:
-            print(cik.CIK)
-            master_ciks.loc[ind, 'lvl3'] = check_lvl3(cik.CIK)
-            time.sleep(1)
+    s = requests.Session()
+    s.headers.update({'User-Agent': 'Mozilla/5.0'})
 
-    master_ciks.to_pickle(cikfilename)
+    for cik, row in zip(cikstopull, rowidx):
+        url = nport_urls[cik][0]
+        lvl3 = s.get(url).text.find('<fairValLevel>3</fairValLevel>') > 0
+        master_ciks.loc[row, 'lvl3'] = lvl3
+        time.sleep(0.15)
 
 
-def check_lvl3(cik, start_date=datetime(2020, 11, 30)):
-    """Grabs 6 SEC filings iteratively and checks if this fund holds any Level 3 securities
-     Returns True/False. Checks goes back every year until 2015 then every 5 years after that"""
-
-    lvl3exists = False
-
-    while not lvl3exists and start_date > datetime(1990, 1, 1):
-
-        tmp_url = Filing(cik, filing_type=FilingType.FILING_NPORTP, start_date=start_date, count=1).get_urls()[cik]
-
-        if tmp_url:
-            req = urllib.request.Request(tmp_url[0], headers={'User-Agent': 'Mozilla/5.0'})
-            lvl3exists = urllib.request.urlopen(req).read().decode('utf-8').find("<fairValLevel>3</fairValLevel>") > 0
-
-        if start_date.year > 2015:
-            start_date = datetime(start_date.year-1, start_date.month, start_date.day)
-        else:
-            start_date = datetime(start_date.year - 5, start_date.month, start_date.day)
-
-        print(start_date)
-
-    return lvl3exists
+    # only overwrite if not NAN!!
+    # separate level 3? all done quarterly? run once through all?
 
 
 def get_urls(end_date=datetime.today()):
@@ -119,7 +126,7 @@ def get_urls(end_date=datetime.today()):
         if cik.lvl3 and not_updated:
             #to do - for buffer - subtract 1 year from start_date
             sec_urls = Filing(cik.CIK, filing_type=FilingType.FILING_NPORTP, start_date=cik.get_urls_date, end_date=end_date).get_urls()
-            cik_urls = [[cik.CIK, x, None, None, None] for x in sec_urls[cik.CIK] if ~master_urls['filingURL'].str.contains(x).any()]
+            cik_urls = [[cik.CIK, x, None, None, None, None] for x in sec_urls[cik.CIK] if ~master_urls['filingURL'].str.contains(x).any()]
             new_urls += cik_urls
             master_ciks.loc[ind, 'get_urls_date'] = end_date
 

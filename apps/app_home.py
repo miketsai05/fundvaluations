@@ -1,8 +1,4 @@
-#add explanation for NPORTP - structured xml, easy to parse
-#explain valuations, triangulation, support details, fair value - asc820/ifrs 13
-#purpose of page, help visualize, small attempt to help improve transparency
 #largest quarter-o-Q change, biggest divergence
-#list mutual funds logos - fidelity, trowe, hartford, blackrock, wellington
 #add a fund page? that lists holdings? grouped and collapsable?
 
 import dash
@@ -44,11 +40,37 @@ def gen_thumbnail(imgname, url, fund):
         ),
     )
 
+def gen_thumbnail2(imgname, url, fund):
+    return dbc.Row(
+        dbc.Col(
+            html.A(
+                html.Img(
+                    src = app.get_asset_url(imgname),
+                    style = {
+                        'width': '160px',
+                        'height': '50px',
+                        'object-fit': 'contain',  # HOW TO GET THIS TO WORK?
+                        # 'max-height': '50px',
+                        # 'max-width': '160px',
+                        # 'width': 'auto',
+                        # 'height': 'auto',
+                        'float': 'none',
+                        'position': 'static',
+                        'padding-bottom': 5,
+                        'border': '1px solid black'
+                    }
+                ),
+                href=url,
+                target='_blank'
+            ),
+            style={'border': '2px solid blue', 'textAlign': 'center'})
+    )
+
 
 master_funds = pd.read_excel('data/master_funds.xlsx')
 images_div = []
 for i in range(master_funds.shape[0]):
-    images_div.append(gen_thumbnail(master_funds.logo[i], master_funds.url[i], master_funds.fund[i]))
+    images_div.append(gen_thumbnail2(master_funds.logo[i], master_funds.url[i], master_funds.fund[i]))
 
 layout = html.Div([
 
@@ -59,15 +81,28 @@ layout = html.Div([
         dbc.Row([
 
             dbc.Col([
+
                 dbc.Row(
-                    html.Div(
-                        html.Img(src=app.get_asset_url(sec_imgname)),
-                        style={'padding-bottom': '30px', 'textAlign': 'center'})
-                               #'display': 'flex', 'align-items': 'center', 'justify-content': 'center'})
+                    dbc.Col(
+                        html.Img(
+                            src=app.get_asset_url(sec_imgname),
+                            style={'width': 'auto', 'height': 'auto'}),
+                        style={'padding-bottom': '20px', 'textAlign': 'center', 'border': '1px solid grey'}),
                 ),
-                dbc.Row(html.P('Submissions from the following funds:'), style={'padding-bottom': '0px'}),
-                dbc.Row(images_div)],
-                width=2
+
+                dbc.Row(
+                    dbc.Col(
+                        html.Label('Valuations from the following funds:'),
+                        style={'verticalAlign': 'bottom', 'border': '1px solid green'})
+                ),
+
+                dbc.Row(
+                    dbc.Col(
+                        images_div,
+                        style={'border': '1px solid red'}))],
+
+                width=2,
+                style={'padding-bottom': '30px', 'textAlign': 'center'}
             ),
 
             dbc.Col(
