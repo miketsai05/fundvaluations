@@ -1,63 +1,104 @@
-aiohttp==3.7.4.post0
-async-timeout==3.0.1
-attrs==21.2.0
-beautifulsoup4==4.9.3
-Brotli @ file:///D:/bld/brotli-split_1610110784919/work
-brotlipy==0.7.0
-certifi==2021.5.30
-cffi @ file:///D:/bld/cffi_1613414140225/work
-chardet @ file:///D:/bld/chardet_1610093646853/work
-click @ file:///D:/bld/click_1621503984716/work
-colorama @ file:///home/conda/feedstock_root/build_artifacts/colorama_1602866480661/work
-cryptography @ file:///D:/bld/cryptography_1616851649655/work
-dash @ file:///home/conda/feedstock_root/build_artifacts/dash_1618036125020/work
-dash-bootstrap-components @ file:///home/conda/feedstock_root/build_artifacts/dash-bootstrap-components_1620178126952/work
-dash-core-components @ file:///home/conda/feedstock_root/build_artifacts/dash-core-components_1617984947808/work
-dash-html-components @ file:///home/conda/feedstock_root/build_artifacts/dash-html-components_1617985450943/work
-dash-renderer @ file:///home/conda/feedstock_root/build_artifacts/dash-renderer_1617984936069/work
-dash-table @ file:///home/conda/feedstock_root/build_artifacts/dash-table_1617984959581/work
-et-xmlfile==1.0.1
-Flask @ file:///home/conda/feedstock_root/build_artifacts/flask_1621629915293/work
-Flask-Compress @ file:///home/conda/feedstock_root/build_artifacts/flask-compress_1613569273720/work
-future @ file:///D:/bld/future_1610147454374/work
-gunicorn==20.1.0
-idna @ file:///home/conda/feedstock_root/build_artifacts/idna_1593328102638/work
-itsdangerous @ file:///home/conda/feedstock_root/build_artifacts/itsdangerous_1621360792037/work
-jdcal==1.4.1
-Jinja2 @ file:///home/conda/feedstock_root/build_artifacts/jinja2_1621419064915/work
-lxml==4.6.3
-MarkupSafe @ file:///D:/bld/markupsafe_1621455847127/work
-multidict==5.1.0
-numpy @ file:///D:/bld/numpy_1621506450533/work
-olefile @ file:///home/conda/feedstock_root/build_artifacts/olefile_1602866521163/work
-openpyxl @ file:///home/conda/feedstock_root/build_artifacts/openpyxl_1615404969632/work
-pandas @ file:///D:/bld/pandas_1618263791034/work
-patsy==0.5.1
-Pillow @ file:///D:/bld/pillow_1621288193589/work
-plotly @ file:///home/conda/feedstock_root/build_artifacts/plotly_1610471242275/work
-plotly-express==0.4.1
-PyAutoGUI @ file:///D:/bld/pyautogui_1602591113211/work
-pycparser @ file:///home/conda/feedstock_root/build_artifacts/pycparser_1593275161868/work
-PyMsgBox @ file:///home/conda/feedstock_root/build_artifacts/pymsgbox_1602398310849/work
-pyOpenSSL @ file:///home/conda/feedstock_root/build_artifacts/pyopenssl_1608055815057/work
-PyScreeze @ file:///home/conda/feedstock_root/build_artifacts/pyscreeze_1618749600070/work
-PySocks @ file:///D:/bld/pysocks_1610291742246/work
-python-dateutil==2.8.1
-PyTweening==1.0.3
-pytz @ file:///home/conda/feedstock_root/build_artifacts/pytz_1612179539967/work
-PyYAML==5.4.1
-requests @ file:///home/conda/feedstock_root/build_artifacts/requests_1608156231189/work
-retrying==1.3.3
-scipy @ file:///C:/bld/scipy_1619562091939/work
-secedgar==0.3.3
-six @ file:///home/conda/feedstock_root/build_artifacts/six_1620240208055/work
-soupsieve==2.2.1
-statsmodels @ file:///D:/bld/statsmodels_1612273760174/work
-tqdm==4.61.1
-typing-extensions==3.10.0.0
-urllib3 @ file:///home/conda/feedstock_root/build_artifacts/urllib3_1622056799390/work
-Werkzeug @ file:///home/conda/feedstock_root/build_artifacts/werkzeug_1621518206714/work
-win-inet-pton @ file:///D:/bld/win_inet_pton_1610147566231/work
-wincertstore==0.2
-xlrd @ file:///home/conda/feedstock_root/build_artifacts/xlrd_1610224409810/work
-yarl==1.6.3
+# This file may be used to create an environment using:
+# $ conda create --name <env> --file <this file>
+# platform: win-64
+aiohttp=3.7.4.post0=pypi_0
+async-timeout=3.0.1=pypi_0
+attrs=21.2.0=pypi_0
+beautifulsoup4=4.9.3=pypi_0
+brotli-python=1.0.9=py38h885f38d_4
+brotlipy=0.7.0=py38h294d835_1001
+ca-certificates=2021.5.30=h5b45459_0
+certifi=2021.5.30=py38haa244fe_0
+cffi=1.14.5=py38hd8c33c5_0
+chardet=4.0.0=py38haa244fe_1
+click=8.0.1=py38haa244fe_0
+colorama=0.4.4=pyh9f0ad1d_0
+cryptography=3.4.7=py38hd7da0ea_0
+dash=1.20.0=pyhd8ed1ab_0
+dash-bootstrap-components=0.12.2=pyhd8ed1ab_0
+dash-core-components=1.16.0=pyhd8ed1ab_0
+dash-html-components=1.1.3=pyhd8ed1ab_0
+dash-renderer=1.9.1=pyhd8ed1ab_0
+dash-table=4.11.3=pyhd8ed1ab_0
+dataclasses=0.8=pyhc8e2a94_1
+et_xmlfile=1.0.1=py_1001
+flask=2.0.1=pyhd8ed1ab_0
+flask-compress=1.9.0=pyhd8ed1ab_0
+freetype=2.10.4=h546665d_1
+future=0.18.2=py38haa244fe_3
+gunicorn=20.1.0=pypi_0
+idna=2.10=pyh9f0ad1d_0
+intel-openmp=2021.2.0=h57928b3_616
+itsdangerous=2.0.1=pyhd8ed1ab_0
+jbig=2.1=h8d14728_2003
+jdcal=1.4.1=py_0
+jinja2=3.0.1=pyhd8ed1ab_0
+jpeg=9d=h8ffe710_0
+lcms2=2.12=h2a16943_0
+lerc=2.2.1=h0e60522_0
+libblas=3.9.0=9_mkl
+libcblas=3.9.0=9_mkl
+libdeflate=1.7=h8ffe710_5
+liblapack=3.9.0=9_mkl
+libpng=1.6.37=h1d00b33_2
+libtiff=4.3.0=h0c97f57_1
+lxml=4.6.3=pypi_0
+lz4-c=1.9.3=h8ffe710_0
+m2w64-gcc-libgfortran=5.3.0=6
+m2w64-gcc-libs=5.3.0=7
+m2w64-gcc-libs-core=5.3.0=7
+m2w64-gmp=6.1.0=2
+m2w64-libwinpthread-git=5.0.0.4634.697f757=2
+markupsafe=2.0.1=py38h294d835_0
+mkl=2021.2.0=hb70f87d_389
+msys2-conda-epoch=20160418=1
+multidict=5.1.0=pypi_0
+numpy=1.20.3=py38h09042cb_0
+olefile=0.46=pyh9f0ad1d_1
+openjpeg=2.4.0=hb211442_1
+openpyxl=3.0.7=pyhd8ed1ab_0
+openssl=1.1.1k=h8ffe710_0
+pandas=1.2.4=py38h60cbd38_0
+patsy=0.5.1=py_0
+pillow=8.2.0=py38h9273828_1
+pip=21.1.2=pyhd8ed1ab_0
+plotly=4.14.3=pyh44b312d_0
+plotly_express=0.4.1=py_0
+pyautogui=0.9.48=py38h32f6830_1
+pycparser=2.20=pyh9f0ad1d_2
+pymsgbox=1.0.9=pyh9f0ad1d_0
+pyopenssl=20.0.1=pyhd8ed1ab_0
+pyscreeze=0.1.27=pyhd8ed1ab_0
+pysocks=1.7.1=py38haa244fe_3
+python=3.8.10=h7840368_1_cpython
+python-dateutil=2.8.1=py_0
+python_abi=3.8=1_cp38
+pytweening=1.0.3=py_0
+pytz=2021.1=pyhd8ed1ab_0
+pyyaml=5.4.1=py38h294d835_0
+requests=2.25.1=pyhd3deb0d_0
+retrying=1.3.3=py_2
+scipy=1.6.3=py38he847743_0
+secedgar=0.3.3=pypi_0
+setuptools=49.6.0=py38haa244fe_3
+six=1.16.0=pyh6c4a22f_0
+soupsieve=2.2.1=pypi_0
+sqlite=3.35.5=h8ffe710_0
+statsmodels=0.12.2=py38h347fdf6_0
+tbb=2021.2.0=h2d74725_0
+tk=8.6.10=h8ffe710_1
+tqdm=4.61.1=pypi_0
+typing-extensions=3.10.0.0=pypi_0
+urllib3=1.26.5=pyhd8ed1ab_0
+vc=14.2=hb210afc_4
+vs2015_runtime=14.28.29325=h5e1d092_4
+werkzeug=2.0.1=pyhd8ed1ab_0
+wheel=0.36.2=pyhd3deb0d_0
+win_inet_pton=1.1.0=py38haa244fe_2
+wincertstore=0.2=py38haa244fe_1006
+xlrd=2.0.1=pyhd8ed1ab_3
+xz=5.2.5=h62dcd97_1
+yaml=0.2.5=he774522_0
+yarl=1.6.3=pypi_0
+zlib=1.2.11=h62dcd97_1010
+zstd=1.5.0=h6255e5f_0
