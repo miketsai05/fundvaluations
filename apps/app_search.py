@@ -14,22 +14,22 @@ from app import app
 
 
 def gen_table(search_name):
-    cols = ['fundManager', 'valDate', 'pershare', 'balance', 'Fund', 'name', 'title', 'filingURL'] #don't need this in both functions
+    cols = ['Entity Name', 'seriesname', 'fundfamily', 'valDate', 'pershare', 'balance', 'name', 'title', 'filingURL'] #don't need this in both functions
     tmptable = sd.search_select(search_name)
     tmptable = sd.merge_data(tmptable)
     tmptable = tmptable[cols]
-    tmptable['Fund_xml'] = '['+tmptable['Fund'].astype(str)+']('+tmptable['filingURL'].str[:-24]+'xslFormNPORT-P_X01/primary_doc.xml)'
-    tmptable['Fund_html']= '['+tmptable['Fund'].astype(str)+']('+tmptable['filingURL'].astype(str)+')'
+    tmptable['Fund_xml'] = '['+tmptable['seriesname'].astype(str)+']('+tmptable['filingURL'].str[:-24]+'xslFormNPORT-P_X01/primary_doc.xml)'
+    tmptable['Fund_html']= '['+tmptable['seriesname'].astype(str)+']('+tmptable['filingURL'].astype(str)+')'
     tmptable['valDate'] = tmptable['valDate'].dt.date
     return tmptable
 
 
 def gen_table_format():
-    cols = ['fundManager', 'valDate', 'pershare', 'balance', 'Fund_xml', 'name', 'title']
-    colnames = ['Fund Manager', 'Valuation Date', 'Per Share Valuation', 'Number of Shares', 'Fund',
+    cols = ['Entity Name', 'Fund_xml', 'fundfamily', 'valDate', 'pershare', 'balance',  'name', 'title']
+    colnames = ['Fund Manager', 'Fund', 'Fund Family', 'Valuation Date', 'Per Share Valuation', 'Number of Shares',
                 'Holding Name', 'Holding Title']
-    coltype = ['text', 'datetime', 'numeric', 'numeric', 'text', 'text', 'text']
-    colpresentation = ['input', 'input', 'input', 'input', 'markdown', 'input', 'input']
+    coltype = ['text', 'text', 'text', 'datetime', 'numeric', 'numeric', 'text', 'text']
+    colpresentation = ['input', 'markdown', 'input', 'input', 'input', 'input', 'input', 'input']
 
     dt_cols = [{'name': x, 'id': y, 'type': z, 'presentation': a} for x, y, z, a in
                zip(colnames, cols, coltype, colpresentation)]
@@ -37,8 +37,8 @@ def gen_table_format():
     moneyformat = FormatTemplate.money(2)
     numformat = Format(precision=0, scheme=Scheme.fixed).group(True)
 
-    dt_cols[2]['format'] = moneyformat
-    dt_cols[3]['format'] = numformat
+    dt_cols[4]['format'] = moneyformat
+    dt_cols[5]['format'] = numformat
 
     return dt_cols
 
@@ -85,7 +85,7 @@ layout = html.Div([
                     options=[],
                     value=[],
                 ),
-                label='Filter Table by Fund Manager',
+                label='Filter Table by Fund Family',
             ),
             style={'width': 'auto', 'display': 'inline-block', 'padding-left': '30px', 'padding-right': '10px'}
         ),
@@ -149,8 +149,8 @@ def update_graph(n_clicks, n_submit, input_value):
         return dash.no_update, 'Please enter at least 3 characters'
     else:
         tmptable = gen_table(input_value)
-        manageroptions = [{'label': i, 'value': i} for i in sorted(tmptable['fundManager'].unique())]
-        managerval = sorted(tmptable['fundManager'].unique())
+        manageroptions = [{'label': i, 'value': i} for i in sorted(tmptable['fundfamily'].unique())]
+        managerval = sorted(tmptable['fundfamily'].unique())
         dateoptions = [{'label': i, 'value': i} for i in sorted(tmptable['valDate'].unique(), reverse=True)]
         dateval = sorted(tmptable['valDate'].unique(), reverse=True)
         return tmptable.to_dict('records'), manageroptions, managerval, dateoptions, dateval
@@ -165,7 +165,7 @@ def update_graph(n_clicks, n_submit, input_value):
 )
 def filter_table(selectmanager, selectdate, data):
     tmptable = pd.DataFrame.from_dict(data)
-    tmptable = tmptable[tmptable['fundManager'].isin(selectmanager) & tmptable['valDate'].isin(selectdate)]
+    tmptable = tmptable[tmptable['fundfamily'].isin(selectmanager) & tmptable['valDate'].isin(selectdate)]
     return tmptable.to_dict('records')
 
 

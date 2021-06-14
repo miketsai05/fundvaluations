@@ -31,6 +31,10 @@
 # set up pages with logos for all unicorns - doing top 30 first
 # set up page for all other searches
 
+# Fund Family: master_ciks['fundfamily']
+# Fund Manager: master_ciks['Entity Name']
+# Fund: master_urls['seriesname']
+
 import pandas as pd
 import plotly
 import plotly.express as px
@@ -58,8 +62,8 @@ def merge_data(select_holdings, unicornflag=False):
 
     holdings_cols = ['accessNum', 'name', 'title', 'balance', 'curCd', 'valUSD', 'units', 'assetCat']
     if unicornflag: holdings_cols.append('unicorn')
-    cik_cols = ['CIK', 'fundManager', 'Fund']
 
+    cik_cols = ['CIK Number', 'CIK', 'Entity Name', 'infamily', 'fundfamily']
     cikfilename = "data/master_ciks.pkl"
     master_ciks = pd.read_pickle(cikfilename)
 
@@ -68,7 +72,7 @@ def merge_data(select_holdings, unicornflag=False):
 
     data_merged = select_holdings[holdings_cols]
     data_merged = data_merged.merge(master_urls, how='left', on='accessNum')
-    data_merged = data_merged.merge(master_ciks[cik_cols], how='left', on='CIK')
+    data_merged = data_merged.merge(master_ciks[cik_cols], how='left', on='CIK Number')
 
     numcols = ['balance','valUSD']
     data_merged[numcols] = data_merged[numcols].astype(float)
@@ -90,9 +94,9 @@ def group_data(merged_data, unicornflag=False):
 
     # Concatenate Fund and Series before groupby?
 
-    cols = ['fundManager', 'valDate', 'pershare']
+    cols = ['fundfamily', 'valDate', 'pershare']
     if unicornflag: cols = ['unicorn']+cols
-    f = {'balance': 'sum', 'Fund': ',<br>'.join, 'name':','.join, 'title':','.join, 'filingURL':','.join}
+    f = {'balance': 'sum', 'Entity Name': ',<br>'.join, 'seriesname': ',<br>'.join, 'name':','.join, 'title':','.join, 'filingURL':','.join}
 
     data_grouped = merged_data.groupby(cols, as_index=False).agg(f)
     data_grouped['normbalance'] = np.log10(data_grouped['balance'])
@@ -100,13 +104,13 @@ def group_data(merged_data, unicornflag=False):
     return data_grouped
 
 
-def search_unicorns(co_name, aka, legal_name, search_legal=False, threshold=0.5):
+def search_unicorns(master_holdings, co_name, aka, legal_name, search_legal=False, threshold=0.5):
     """ Searches for relevant unicorn records in master_holdings.pkl given unicorn name, aka or legal name """
 
     # Should I pass in master_holdings as a dataframe rather than open each time?? TBD
 
-    holdingsfilename = "data/master_holdings.pkl"
-    master_holdings = pd.read_pickle(holdingsfilename)
+    # holdingsfilename = "data/master_holdings.pkl"
+    # master_holdings = pd.read_pickle(holdingsfilename)
 
     ind1 = master_holdings['name'].str.lower().str.contains(co_name.lower())
     ind2 = pd.Series(np.full(len(master_holdings), False, dtype=bool), index=master_holdings.index)
@@ -120,7 +124,7 @@ def search_unicorns(co_name, aka, legal_name, search_legal=False, threshold=0.5)
     # if search_legal:
         # to do - implement fuzzy search??
 
-    unicorn_records = master_holdings[ind1|ind2]
+    unicorn_records = master_holdings[ind1|ind2].copy()
 
     return unicorn_records
 
@@ -129,6 +133,9 @@ def select_unicorns():
     """ Loops through unicorns in master_unicorns.xlsx - searches for records.
     Concats all records, merges with URL and CIK data and groups by name, fund manager, valdate and price.
     Saves both selected merged records and grouped data"""
+
+    holdingsfilename = "data/master_holdings.pkl"
+    master_holdings = pd.read_pickle(holdingsfilename)
 
     unicornsfilename = 'data/master_unicorns.xlsx'
     master_unicorns = pd.read_excel(unicornsfilename)
@@ -141,8 +148,9 @@ def select_unicorns():
         aka = master_unicorns.loc[i, 'aka']
         legal_name = master_unicorns.loc[i, 'Legal Name']
 
-        tmp = search_unicorns(co_name, aka, legal_name)
+        tmp = search_unicorns(master_holdings, co_name, aka, legal_name)
         tmp['unicorn'] = co_name
+        print(co_name)
 
         tmp_list.append(tmp)
 
@@ -151,13 +159,13 @@ def select_unicorns():
     unicorn_data = merge_data(select_data, unicornflag=True)
     unicorn_data_grouped = group_data(unicorn_data, unicornflag=True)
 
-    unicorn_data.to_pickle('data/unicorn_data')
-    unicorn_data_grouped.to_pickle('data/unicorn_data_grouped')
+    unicorn_data.to_pickle('data/unicorn_data.pkl')
+    unicorn_data_grouped.to_pickle('data/unicorn_data_grouped.pkl')
 
 
 def gen_fig(unicorn_name):
 
-    unicorn_data_grouped = pd.read_pickle('data/unicorn_data_grouped')
+    unicorn_data_grouped = pd.read_pickle('data/unicorn_data_grouped.pkl')
     gdata = unicorn_data_grouped[unicorn_data_grouped['unicorn'] == unicorn_name].copy()
 
     return gen_fig_fromgdata(gdata, unicorn_name)
@@ -221,5 +229,6 @@ def gen_fig_fromgdata(gdata, graphtitle=''):
 
 if __name__ == "__main__":
     select_unicorns()
-    unicorn_data = pd.read_pickle('data/unicorn_data')
+    unicorn_data = pd.read_pickle('data/unicorn_data.pkl')
+    unicorn_data_grouped = pd.read_pickle('data/unicorn_data_grouped.pkl')
 

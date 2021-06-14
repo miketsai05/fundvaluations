@@ -24,17 +24,17 @@ def gen_summary_data():
     master_unicorns = pd.read_excel(unicornsfilename)
     master_unicorns = master_unicorns.where(pd.notnull(master_unicorns), None)
     unicornset = master_unicorns.loc[0:30, 'Company Name']
-    unicorn_data = pd.read_pickle('data/unicorn_data')
+    unicorn_data = pd.read_pickle('data/unicorn_data.pkl')
 
     tmptable1 = master_unicorns[master_unicorns['Company Name'].isin(unicornset)][['Company Name', 'Country', 'Industry']]
     tmptable1.rename(columns={'Company Name': 'unicorn'}, inplace=True)
 
-    f = {'accessNum': 'count', 'fundManager': lambda x: ', '.join(x.unique()), 'valDate': ['min', 'max']}
+    f = {'accessNum': 'count', 'fundfamily': lambda x: ', '.join(x.astype(str).unique()), 'valDate': ['min', 'max']}
     tmpgrouped = unicorn_data.groupby('unicorn', as_index=False).agg(f)
     tmpgrouped.columns = ["".join(x) for x in tmpgrouped.columns.ravel()]
     tmpgrouped['valDaterange'] = tmpgrouped['valDatemin'].astype(str)+' to ' + tmpgrouped['valDatemax'].astype(str)
     tmpgrouped.drop(columns=['valDatemin', 'valDatemax'], inplace=True)
-    tmpgrouped.rename(columns={'fundManager<lambda>': 'fundManagerunique'}, inplace=True)
+    tmpgrouped.rename(columns={'fundfamily<lambda>': 'fundfamilyunique'}, inplace=True)
 
     tmptable1 = tmptable1.merge(tmpgrouped, how='left', on='unicorn')
 
@@ -46,8 +46,8 @@ def gen_summary_data():
 
 def gen_table_format():
 
-    cols = ['unicorn', 'Country', 'Industry', 'fundManagerunique', 'accessNumcount', 'valDaterange']
-    colnames = ['Company', 'Country', 'Industry', 'Fund Managers', 'Number of Filings', 'Valuation Dates Available']
+    cols = ['unicorn', 'Country', 'Industry', 'fundfamilyunique', 'accessNumcount', 'valDaterange']
+    colnames = ['Company', 'Country', 'Industry', 'Fund Families', 'Number of Filings', 'Valuation Dates Available']
     coltype = ['text', 'text', 'text', 'text', 'numeric', 'text']
     colpresentation = ['input', 'input', 'input', 'input', 'input', 'input']
 
