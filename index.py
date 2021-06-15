@@ -4,6 +4,7 @@ from dash.dependencies import Input, Output
 
 from app import app
 from apps import app_home, app_summary, app_unicorn, app_search
+from app import server
 
 
 app.layout = html.Div([
