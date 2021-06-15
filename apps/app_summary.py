@@ -1,7 +1,9 @@
 # type of investments
-#trend?? - # marking up, # marking down - sort by biggest options, YoY, QoQ, MoM
-#link each unicorn to individual page
+#TO DO remove nan from fundfamilies
 
+#TO DO trend?? - # marking up, # marking down - sort by biggest options, YoY, QoQ, MoM
+#TO DO link each unicorn to individual page
+#TO DO replace ravel with another function
 
 import dash
 from dash.dependencies import Input, Output
@@ -33,15 +35,23 @@ def gen_summary_data():
     tmpgrouped = unicorn_data.groupby('unicorn', as_index=False).agg(f)
     tmpgrouped.columns = ["".join(x) for x in tmpgrouped.columns.ravel()]
     tmpgrouped['valDaterange'] = tmpgrouped['valDatemin'].astype(str)+' to ' + tmpgrouped['valDatemax'].astype(str)
+    # TO DO change this to Mmm YYYY
     tmpgrouped.drop(columns=['valDatemin', 'valDatemax'], inplace=True)
     tmpgrouped.rename(columns={'fundfamily<lambda>': 'fundfamilyunique'}, inplace=True)
 
     tmptable1 = tmptable1.merge(tmpgrouped, how='left', on='unicorn')
 
+    # tooltipdata=[
+    #     {
+    #         column: {'value': str(value), 'type': 'markdown'}
+    #         for column, value in row.items()
+    #     } for row in tmptable1['fundfamilyunique'].to_dict('records')
+    # ],
+
     # Store this to open
     # types of investments, trend
 
-    return tmptable1
+    return tmptable1 #, tooltipdata
 
 
 def gen_table_format():
@@ -72,8 +82,35 @@ layout = html.Div([
             data = gen_summary_data().to_dict('records'),
             # data = tmptable1.to_dict('records'),
             columns=gen_table_format(),
-            style_header={'fontWeight': 'bold', 'whiteSpace': 'normal', 'padding-left': '5px', 'padding-right': '5px'},
-            style_cell={'textAlign': 'center'},
+            style_header={
+                'fontWeight': 'bold',
+                'whiteSpace': 'normal',
+                'padding-left': '5px',
+                'padding-right': '5px'
+            },
+            style_cell={
+                'textAlign': 'center',
+                'lineHeight': '15px'
+            },
+            style_data={
+                'whiteSpace': 'normal',
+                'height': 'auto',
+                'lineHeight': '15px'
+            },
+            style_cell_conditional=[
+                {'if': {'column_id': 'fundfamilyunique'},
+                    'height': 'auto',
+                    'whiteSpace': 'normal',
+                    'overflow': 'hidden',
+                    'textOverflow': 'ellipsis'}
+            ],
+            # tooltip_data=[
+            #     {
+            #         column: {'value': str(value), 'type': 'markdown'}
+            #         for column, value in row.items()
+            #     } for row in df.to_dict('records')
+            # ],
+            # tooltip_duration=None,
             sort_action='native',
         ),
         style={'padding-top': '20px'}

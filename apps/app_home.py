@@ -57,7 +57,7 @@ def gen_thumbnail2(imgname, url, fund):
                         'float': 'none',
                         'position': 'static',
                         'padding-bottom': 5,
-                        'border': '1px solid black'
+                        # 'border': '1px solid black'
                     }
                 ),
                 href=url,

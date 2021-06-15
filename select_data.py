@@ -178,10 +178,10 @@ def gen_fig_fromgdata(gdata, graphtitle=''):
                      y='pershare',
                      title=graphtitle,
                      size='normbalance',
-                     color='fundManager',
+                     color='fundfamily',
                      template='simple_white',
-                     hover_name='fundManager',
-                     custom_data=['valDatestr', 'balance', 'Fund']
+                     hover_name='fundfamily',
+                     custom_data=['valDatestr', 'balance', 'fundfamily']
                      )
 
     fig.update_layout(
@@ -192,7 +192,7 @@ def gen_fig_fromgdata(gdata, graphtitle=''):
             yaxis_title='Per Share Valuation',
             yaxis_tickformat='$.2f',
             yaxis_rangemode='tozero',
-            legend_title='Fund Manager',
+            legend_title='Fund Family',
             title={
                 'x': 0.5,
                 'y': 0.9,
@@ -209,7 +209,7 @@ def gen_fig_fromgdata(gdata, graphtitle=''):
             #marker_opacity=1,
             opacity=0.6,
             hovertemplate=
-                '<b>Fund Manager:</b> %{hovertext}<br>'
+                '<b>Fund Family:</b> %{hovertext}<br>'
                 '<b>Valuation Date:</b> %{customdata[0]}<br>'
                 '<b>Per Share Valuation:</b> %{y:$0.2f}<br>'
                 '<b>Aggregate Number of Shares:</b> %{customdata[1]:0,000}<br><br>'

@@ -1,5 +1,12 @@
-#need to add code for case of no records returned
-#show debt as separate table as percentage of par split based on NS vs PA
+#TO DO fix hover
+#TO DO add filter for asset type
+#TO DO fundmanager combine fundfamily if not then name
+#TO DO add colors per fundmanager
+#TO DO callback to change sec link from html to txt (maybe add hover to explain)
+
+
+#TO DO show debt as separate table as percentage of par split based on NS vs PA
+#TO DO add toggle to change size of points on graph
 
 import dash
 from dash.dependencies import Input, Output
@@ -9,6 +16,7 @@ import dash_table as dt
 from dash_table import FormatTemplate
 from dash_table.Format import Format, Scheme
 import dash_bootstrap_components as dbc
+import plotly.express as px
 import pandas as pd
 import select_data as sd
 from apps.navbar import gen_navbar
@@ -49,6 +57,7 @@ master_unicorns = pd.read_excel(unicornsfilename)
 master_unicorns = master_unicorns.where(pd.notnull(master_unicorns), None)
 unicornset = master_unicorns.loc[0:30,'Company Name']
 unicorn_data = pd.read_pickle('data/unicorn_data.pkl')
+havedata = set(unicorn_data['unicorn'].str.lower())
 
 
 layout = html.Div([
@@ -61,7 +70,7 @@ layout = html.Div([
         html.Label('Company Name'),
         dcc.Dropdown(
             id='company-input',
-            options=[{'label': x, 'value': x} for x in unicornset],
+            options=[{'label': x, 'value': x} for x in unicornset if x.lower() in havedata],
             value='Bytedance',
             clearable=False
         )
@@ -129,7 +138,7 @@ layout = html.Div([
 ])
 
 
-# add toggle to change size of points on graph
+
 
 @app.callback(
     Output(component_id='valuations-graph', component_property='figure'),
@@ -142,11 +151,15 @@ layout = html.Div([
 )
 def update_graph(input_value):
     tmptable = gen_table(input_value)
-    manageroptions = [{'label': i, 'value': i} for i in sorted(tmptable['fundfamily'].unique())]
-    managerval = sorted(tmptable['fundfamily'].unique())
+    manageroptions = [{'label': i, 'value': i} for i in sorted(tmptable['fundfamily'].astype(str).unique())]
+    managerval = sorted(tmptable['fundfamily'].astype(str).unique())
     dateoptions = [{'label': i, 'value': i} for i in sorted(tmptable['valDate'].unique(), reverse=True)]
     dateval = sorted(tmptable['valDate'].unique(), reverse=True)
-    return sd.gen_fig(input_value), tmptable.to_dict('records'), manageroptions, managerval, dateoptions, dateval
+    # if len(tmptable)>0:
+    outfig = sd.gen_fig(input_value)
+    # else:
+    #     outfig = px.scatter
+    return outfig, tmptable.to_dict('records'), manageroptions, managerval, dateoptions, dateval
 
 
 @app.callback(
