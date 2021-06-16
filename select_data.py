@@ -1,3 +1,7 @@
+# Separate each Fund Manager into a different trace so hover works even if same per share valuation
+# Fund Manager specific color throughout
+# add annotations for funding round
+
 # NEED TO DISTINGUISH ==>>
 # UNITS = NS is number of shares,
 #         PA is principal amount,
@@ -26,17 +30,12 @@
 # ABS-asset backed commercial paper, ABS-collateralized bond/debt obligation, ABS-other,
 # commodity, real estate, other). If “other,” provide a brief description.
 
-# FOR GIVEN COMPANY - FIND RELEVANT SEC FILING DATA FROM MASTER_HOLDINGS.PKL
-
-# set up pages with logos for all unicorns - doing top 30 first
-# set up page for all other searches
-
-# Fund Family: master_ciks['fundfamily']
+# Fund Family: master_ciks['fundfamily'] or Fund Manager
 # Fund Manager: master_ciks['Entity Name']
 # Fund: master_urls['seriesname']
 
+
 import pandas as pd
-import plotly
 import plotly.express as px
 import numpy as np
 
@@ -86,15 +85,13 @@ def merge_data(select_holdings, unicornflag=False):
     return data_merged
 
 
-def group_data(merged_data, unicornflag=False):
+def group_data(merged_data, group_on, unicornflag=False):
     """ Groups merged data for better visual in plotly graph. Converts certain columns and normalizes balance data
       From merged_data input: AccessNum, Name, Title, balance, curCd, valUSD, Unicorn Name
       From master_urls: CIK, filingURL, AccessNum, valDate, fileDate (ALL COLUMNS)
       From master_ciks: CIK, Manager Name, Fund """
 
-    # Concatenate Fund and Series before groupby?
-
-    cols = ['fundfamily', 'valDate', 'pershare']
+    cols = [group_on] + ['valDate', 'pershare', 'units', 'assetCat']
     if unicornflag: cols = ['unicorn']+cols
     f = {'balance': 'sum', 'Entity Name': ',<br>'.join, 'seriesname': ',<br>'.join, 'name':','.join, 'title':','.join, 'filingURL':','.join}
 
@@ -106,11 +103,6 @@ def group_data(merged_data, unicornflag=False):
 
 def search_unicorns(master_holdings, co_name, aka, legal_name, search_legal=False, threshold=0.5):
     """ Searches for relevant unicorn records in master_holdings.pkl given unicorn name, aka or legal name """
-
-    # Should I pass in master_holdings as a dataframe rather than open each time?? TBD
-
-    # holdingsfilename = "data/master_holdings.pkl"
-    # master_holdings = pd.read_pickle(holdingsfilename)
 
     ind1 = master_holdings['name'].str.lower().str.contains(co_name.lower())
     ind2 = pd.Series(np.full(len(master_holdings), False, dtype=bool), index=master_holdings.index)
@@ -157,7 +149,18 @@ def select_unicorns():
     select_data = pd.concat(tmp_list, ignore_index=True)
 
     unicorn_data = merge_data(select_data, unicornflag=True)
-    unicorn_data_grouped = group_data(unicorn_data, unicornflag=True)
+
+    famind = unicorn_data['fundfamily']==unicorn_data['fundfamily']
+
+    unicorn_data['fundManager_raw'] = np.nan
+    unicorn_data.loc[famind, 'fundManager_raw'] = unicorn_data.loc[famind, 'fundfamily']
+    unicorn_data.loc[~famind, 'fundManager_raw'] = unicorn_data.loc[~famind, 'Entity Name']
+
+    fund_map = pd.read_excel('data/master_funds.xlsx', sheet_name='fund_map')
+
+
+    # unicorn_data_grouped = group_data(unicorn_data[famind], 'fundfamily', unicornflag=True)
+    # unicorn_data_grouped = unicorn_data_grouped.append(group_data(unicorn_data[~famind], 'Entity Name', unicornflag=True))
 
     unicorn_data.to_pickle('data/unicorn_data.pkl')
     unicorn_data_grouped.to_pickle('data/unicorn_data_grouped.pkl')
@@ -169,6 +172,7 @@ def gen_fig(unicorn_name):
     gdata = unicorn_data_grouped[unicorn_data_grouped['unicorn'] == unicorn_name].copy()
 
     return gen_fig_fromgdata(gdata, unicorn_name)
+
 
 def gen_fig_fromgdata(gdata, graphtitle=''):
     gdata['valDatestr'] = gdata['valDate'].dt.strftime('%b %d, %Y')
@@ -221,14 +225,9 @@ def gen_fig_fromgdata(gdata, graphtitle=''):
     return fig
 
 
-    # Separate each Fund Manager into a different trace so hover works even if same per share valuation
-    # Fund Manager specific color throughout
-    # Facet Row by fund manager
-    # add annotations for funding round
-
-
 if __name__ == "__main__":
     select_unicorns()
     unicorn_data = pd.read_pickle('data/unicorn_data.pkl')
     unicorn_data_grouped = pd.read_pickle('data/unicorn_data_grouped.pkl')
+    fundManager_unique = sorted(set(unicorn_data['fundManager_raw']))
 

@@ -1,7 +1,7 @@
 #TO DO fix hover
 #TO DO add filter for asset type
 #TO DO fundmanager combine fundfamily if not then name
-#TO DO add colors per fundmanager
+#TO DO add specific colors per fundmanager
 #TO DO callback to change sec link from html to txt (maybe add hover to explain)
 
 
@@ -25,15 +25,18 @@ from app import app
 
 
 def gen_table(unicorn_name):
+
     cols = ['unicorn', 'Entity Name', 'seriesname', 'fundfamily', 'valDate', 'pershare', 'balance', 'name', 'title', 'filingURL'] #don't need this in both functions
     tmptable = unicorn_data[unicorn_data['unicorn']==unicorn_name][cols].copy()
-    tmptable['Fund_xml'] = '['+tmptable['seriesname'].astype(str)+']('+tmptable['filingURL'].str[:-24]+'xslFormNPORT-P_X01/primary_doc.xml)'
+    tmptable['Fund_xml'] = '['+tmptable['seriesname'].astype(str)+']('+tmptable['filingURL'].str[:-4].replace('-','')+'/xslFormNPORT-P_X01/primary_doc.xml)'
     tmptable['Fund_html']= '['+tmptable['seriesname'].astype(str)+']('+tmptable['filingURL'].astype(str)+')'
     tmptable['valDate'] = tmptable['valDate'].dt.date
+
     return tmptable
 
 
 def gen_table_format():
+
     cols = ['unicorn', 'Entity Name', 'Fund_xml', 'fundfamily', 'valDate', 'pershare', 'balance', 'name', 'title']
     colnames = ['Company', 'Fund Manager', 'Fund', 'Fund Family', 'Valuation Date', 'Per Share Valuation', 'Number of Shares',
                 'Holding Name', 'Holding Title']
@@ -173,7 +176,3 @@ def filter_table(selectmanager, selectdate, data):
     tmptable = pd.DataFrame.from_dict(data)
     tmptable = tmptable[tmptable['fundfamily'].isin(selectmanager) & tmptable['valDate'].isin(selectdate)]
     return tmptable.to_dict('records')
-
-#
-# if __name__ == '__main__':
-#     app.run_server(debug=True)

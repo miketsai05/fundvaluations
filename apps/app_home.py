@@ -67,7 +67,7 @@ def gen_thumbnail2(imgname, url, fund):
     )
 
 
-master_funds = pd.read_excel('data/master_funds.xlsx')
+master_funds = pd.read_excel('data/master_funds.xlsx', sheet_name = 'fund_details')
 images_div = []
 for i in range(master_funds.shape[0]):
     images_div.append(gen_thumbnail2(master_funds.logo[i], master_funds.url[i], master_funds.fund[i]))
@@ -92,7 +92,7 @@ layout = html.Div([
 
                 dbc.Row(
                     dbc.Col(
-                        html.Label('Valuations from the following funds:'),
+                        html.Label('Level 3 valuations from 2000+ mutual funds including:'),
                         style={'verticalAlign': 'bottom', 'border': '1px solid green'})
                 ),
 

@@ -169,7 +169,3 @@ def filter_table(selectmanager, selectdate, data):
     tmptable = pd.DataFrame.from_dict(data)
     tmptable = tmptable[tmptable['fundfamily'].isin(selectmanager) & tmptable['valDate'].isin(selectdate)]
     return tmptable.to_dict('records')
-
-
-# if __name__ == '__main__':
-#     app.run_server(debug=True)
