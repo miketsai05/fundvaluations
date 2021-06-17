@@ -70,75 +70,76 @@ layout = html.Div([
 
     gen_navbar(),
 
-    html.Div([
-        html.Label('Company Name'),
-        dcc.Dropdown(
-            id='company-input',
-            options=[{'label': x, 'value': x} for x in unicornset if x.lower() in havedata],
-            value='Bytedance',
-            clearable=False
-        )
-        ],
-        style={'padding-top': '5%', 'padding-left': '10px', 'width': '20%', 'display': 'inline-block', 'vertical-align': 'top'}
-    ),
+    dbc.Container([
 
-    html.Div(
-        dcc.Graph(
-            id='valuations-graph'
-        ),
-        style={'width': '79%', 'display': 'inline-block', 'vertical-align': 'top'}
-    ),
+        dbc.Row([
+            dbc.Col(
+                html.Div([
+                    html.Label('Company Name'),
+                    dcc.Dropdown(
+                        id='company-input',
+                        options=[{'label': x, 'value': x} for x in unicornset if x.lower() in havedata],
+                        value='Bytedance',
+                        clearable=False)],
+                    style={'padding-top': '5%', 'padding-left': '10px', 'width': '20%', 'display': 'inline-block', 'vertical-align': 'top'}),
+                width=3),
+            dbc.Col(
+                html.Div(
+                    dcc.Graph(id='valuations-graph'),
+                    style={'width': '79%', 'display': 'inline-block', 'vertical-align': 'top'}),
+                width=9)
+        ]),
 
-    dbc.Row([
-        html.Div(
-            dbc.DropdownMenu(
-                dbc.Checklist(
-                    id='filterManager',
-                    options=[],
-                    value=[],
+        dbc.Row([
+            html.Div(
+                dbc.DropdownMenu(
+                    dbc.Checklist(
+                        id='filterManager',
+                        options=[],
+                        value=[],
+                    ),
+                    label='Filter Table by Fund Manager',
                 ),
-                label='Filter Table by Fund Manager',
+                style={'width': 'auto', 'display': 'inline-block', 'padding-left': '30px', 'padding-right': '10px'}
             ),
-            style={'width': 'auto', 'display': 'inline-block', 'padding-left': '30px', 'padding-right': '10px'}
-        ),
 
-        html.Div(
-            dbc.DropdownMenu(
-                dbc.Checklist(
-                    id='filterDate',
-                    options=[],
-                    value=[],
+            html.Div(
+                dbc.DropdownMenu(
+                    dbc.Checklist(
+                        id='filterDate',
+                        options=[],
+                        value=[],
+                    ),
+                    label='Filter Table by Valuation Date',
                 ),
-                label='Filter Table by Valuation Date',
+                style={'width': 'auto', 'display': 'inline-block'}
             ),
-            style={'width': 'auto', 'display': 'inline-block'}
+
+            html.Div(
+                dbc.RadioItems(
+                    options=[
+                        {"label": "Link to html filings", "value": 1},
+                        {"label": "Link to text filings", "value": 2},
+                    ],
+                    value=1,
+                    id="link-input",
+                ),
+                style={'display':'inline-block', 'padding-left': '20px'}
+            ),
+            ],
+        style={'padding-bottom': '10px'}
         ),
 
         html.Div(
-            dbc.RadioItems(
-                options=[
-                    {"label": "Link to html filings", "value": 1},
-                    {"label": "Link to text filings", "value": 2},
-                ],
-                value=1,
-                id="link-input",
-            ),
-            style={'display':'inline-block', 'padding-left': '20px'}
-        ),
-        ],
-    style={'padding-bottom': '10px'}
-    ),
-
-    html.Div(
-        dt.DataTable(
-            id='table1',
-            columns=gen_table_format(),
-            style_header={'fontWeight': 'bold', 'whiteSpace': 'normal', 'padding-left': '5px', 'padding-right': '5px'},
-            style_cell={'textAlign': 'center'},
-            sort_action='native',
+            dt.DataTable(
+                id='table1',
+                columns=gen_table_format(),
+                style_header={'fontWeight': 'bold', 'whiteSpace': 'normal', 'padding-left': '5px', 'padding-right': '5px'},
+                style_cell={'textAlign': 'center'},
+                sort_action='native',
+            )
         )
-    )
-
+    ])
 ])
 
 
