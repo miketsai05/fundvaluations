@@ -1,5 +1,6 @@
 #TO DO show type of investments
 #TO DO trend?? - # marking up, # marking down - sort by biggest options, YoY, QoQ, MoM
+#TO DO valuationdate - make one line
 
 #TO DO link each unicorn to individual page
 #TO DO replace ravel with another function

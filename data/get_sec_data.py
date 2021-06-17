@@ -162,6 +162,9 @@ def main():
                 url = master_urls.loc[ind, 'filingURL']
                 data1 = s.get(url).text
 
+                master_urls.loc[ind, 'seriesid'] = get_line(data1, '<SERIES-ID>')
+                master_urls.loc[ind, 'seriesname'] = get_line(data1, '<SERIES-NAME>')
+
                 accessNum, val_date, holdings = get_data(data1, df_cols, twolevel_cols)
                 master_urls.loc[ind, 'accessNum'] = accessNum
                 master_urls.loc[ind, 'valDate'] = val_date
@@ -177,57 +180,58 @@ def main():
     master_holdings.to_pickle(holdingsfilename)
 
 
-def get_series_id():
-
-    ### Load pickle files
-    cikfilename = 'master_ciks.pkl'
-    master_ciks = pd.read_pickle(cikfilename)
-
-    urlfilename = "master_urls.pkl"
-    master_urls = pd.read_pickle(urlfilename)
-
-    ### Loop through urls in master_urls
-    s = requests.Session()
-    s.headers.update({'User-Agent': 'Mozilla/5.0'})
-
-    print('Number of unobtained series ids', len(master_urls[master_urls['seriesid']!=master_urls['seriesid']]))
-
-    for ind in master_urls.index:
-
-        if ind % 100 == 0:
-            print(ind)  # comment out
-            pyautogui.press('volumedown')
-            time.sleep(0.5)
-            pyautogui.press('volumeup')
-
-        if ind % 1000 == 0:
-            master_urls.to_pickle(urlfilename)
-
-        curr_sid = master_urls.loc[ind, 'seriesid']
-        curr_CIK = master_urls.loc[ind,'CIK Number']
-        CIKinpkl = len(master_ciks[master_ciks['CIK Number'] == int(curr_CIK)]['lvl3']) > 0
-
-        if curr_sid!=curr_sid and CIKinpkl and curr_CIK not in ['277751', '906185']:
-
-            if (master_ciks[master_ciks['CIK Number'] == int(curr_CIK)]['lvl3'].item() is True):
-
-                print(ind)
-
-                url = master_urls.loc[ind, 'filingURL']
-                data1 = s.get(url).text
-
-                sid = get_line(data1, '<SERIES-ID>')
-                sname = get_line(data1, '<SERIES-NAME>')
-
-                master_urls.loc[ind, 'seriesid'] = sid
-                master_urls.loc[ind, 'seriesname'] = sname
-
-                time.sleep(0.15)  #SEC rate limit 10 requests / sec - slight buffer to be safe here
-        else:
-            print(curr_CIK,'not in pkl file')
-
-    master_urls.to_pickle(urlfilename)
-
 if __name__ == "__main__":
-    # main()
-    get_series_id()
+    main()
+    # get_series_id()
+
+
+# def get_series_id():
+#
+#     ### Load pickle files
+#     cikfilename = 'master_ciks.pkl'
+#     master_ciks = pd.read_pickle(cikfilename)
+#
+#     urlfilename = "master_urls.pkl"
+#     master_urls = pd.read_pickle(urlfilename)
+#
+#     ### Loop through urls in master_urls
+#     s = requests.Session()
+#     s.headers.update({'User-Agent': 'Mozilla/5.0'})
+#
+#     print('Number of unobtained series ids', len(master_urls[master_urls['seriesid']!=master_urls['seriesid']]))
+#
+#     for ind in master_urls.index:
+#
+#         if ind % 100 == 0:
+#             print(ind)  # comment out
+#             pyautogui.press('volumedown')
+#             time.sleep(0.5)
+#             pyautogui.press('volumeup')
+#
+#         if ind % 1000 == 0:
+#             master_urls.to_pickle(urlfilename)
+#
+#         curr_sid = master_urls.loc[ind, 'seriesid']
+#         curr_CIK = master_urls.loc[ind,'CIK Number']
+#         CIKinpkl = len(master_ciks[master_ciks['CIK Number'] == int(curr_CIK)]['lvl3']) > 0
+#
+#         if curr_sid!=curr_sid and CIKinpkl and curr_CIK not in ['277751', '906185']:
+#
+#             if (master_ciks[master_ciks['CIK Number'] == int(curr_CIK)]['lvl3'].item() is True):
+#
+#                 print(ind)
+#
+#                 url = master_urls.loc[ind, 'filingURL']
+#                 data1 = s.get(url).text
+#
+#                 sid = get_line(data1, '<SERIES-ID>')
+#                 sname = get_line(data1, '<SERIES-NAME>')
+#
+#                 master_urls.loc[ind, 'seriesid'] = sid
+#                 master_urls.loc[ind, 'seriesname'] = sname
+#
+#                 time.sleep(0.15)  #SEC rate limit 10 requests / sec - slight buffer to be safe here
+#         else:
+#             print(curr_CIK,'not in pkl file')
+#
+#     master_urls.to_pickle(urlfilename)

@@ -1,9 +1,10 @@
-#TO DO add specific colors per fundmanager
+#-
 
-
-#TO DO callback to change sec link from html to txt (maybe add hover to explain)
 #TO DO show debt as separate table as percentage of par split based on NS vs PA
 #TO DO add toggle to change size of points on graph
+#TO DO callback to change sec link from html to txt (maybe add hover to explain)
+#TO DO add specific colors per fundmanager
+
 
 import dash
 from dash.dependencies import Input, Output

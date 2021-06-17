@@ -1,5 +1,8 @@
+#TO DO make logos smaller, size adjustable to smaller screens
 #largest quarter-o-Q change, biggest divergence
+
 #add a fund page? that lists holdings? grouped and collapsable?
+
 
 import dash
 import dash_core_components as dcc
@@ -92,7 +95,7 @@ layout = html.Div([
 
                 dbc.Row(
                     dbc.Col(
-                        html.Label('Valuations from over 2000+ mutual funds including:'),
+                        html.Label('Valuations aggregated from over 2000+ mutual funds including funds managed by:'),
                         style={'verticalAlign': 'center', 'font-size': 12})
                 ),
 

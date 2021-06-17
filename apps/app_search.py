@@ -1,5 +1,6 @@
+#-
+
 #TO DO add graph
-#TO DO - return nothing if no results
 
 import dash
 from dash.dependencies import Input, Output, State
@@ -17,22 +18,26 @@ from app import app
 
 
 def gen_table(search_name):
-    cols = ['Entity Name', 'seriesname', 'fundfamily', 'valDate', 'pershare', 'balance', 'name', 'title', 'filingURL'] #don't need this in both functions
+
+    cols = ['fundManager', 'seriesname', 'valDate', 'pershare', 'balance', 'name', 'title', 'filingURL'] #don't need this in both functions
     tmptable = sd.search_select(search_name)
     tmptable = sd.merge_data(tmptable)
+
     tmptable = tmptable[cols]
-    tmptable['Fund_xml'] = '['+tmptable['seriesname'].astype(str)+']('+tmptable['filingURL'].str[:-24]+'xslFormNPORT-P_X01/primary_doc.xml)'
+    tmptable['Fund_xml'] = '['+tmptable['seriesname'].astype(str)+']('+tmptable['filingURL'].str[:-4]
+    tmptable['Fund_xml'] = tmptable['Fund_xml'].str.replace('-', '')+'/xslFormNPORT-P_X01/primary_doc.xml)'
     tmptable['Fund_html']= '['+tmptable['seriesname'].astype(str)+']('+tmptable['filingURL'].astype(str)+')'
     tmptable['valDate'] = tmptable['valDate'].dt.date
+
     return tmptable
 
 
 def gen_table_format():
-    cols = ['Entity Name', 'Fund_xml', 'fundfamily', 'valDate', 'pershare', 'balance',  'name', 'title']
-    colnames = ['Fund Manager', 'Fund', 'Fund Family', 'Valuation Date', 'Per Share Valuation', 'Number of Shares',
+    cols = ['fundManager', 'Fund_xml', 'valDate', 'pershare', 'balance',  'name', 'title']
+    colnames = ['Fund Manager', 'Fund', 'Valuation Date', 'Per Share Valuation', 'Number of Shares',
                 'Holding Name', 'Holding Title']
-    coltype = ['text', 'text', 'text', 'datetime', 'numeric', 'numeric', 'text', 'text']
-    colpresentation = ['input', 'markdown', 'input', 'input', 'input', 'input', 'input', 'input']
+    coltype = ['text', 'text', 'datetime', 'numeric', 'numeric', 'text', 'text']
+    colpresentation = ['input', 'markdown', 'input', 'input', 'input', 'input', 'input']
 
     dt_cols = [{'name': x, 'id': y, 'type': z, 'presentation': a} for x, y, z, a in
                zip(colnames, cols, coltype, colpresentation)]
@@ -40,8 +45,8 @@ def gen_table_format():
     moneyformat = FormatTemplate.money(2)
     numformat = Format(precision=0, scheme=Scheme.fixed).group(True)
 
-    dt_cols[4]['format'] = moneyformat
-    dt_cols[5]['format'] = numformat
+    dt_cols[3]['format'] = moneyformat
+    dt_cols[4]['format'] = numformat
 
     return dt_cols
 
@@ -59,19 +64,19 @@ layout = html.Div([
 
     gen_navbar(),
 
-    dbc.Row(
-        [
+    dbc.Row([
             dbc.Input(
                 id="search-input2",
-                placeholder="Search among Level 3 holdings from N-PORT filings for key word",
+                placeholder="Search Level 3 holdings data from N-PORT filings for key word",
                 type="search",
-                style={'width': '30%', 'display': 'inline-block', 'padding-right': '10px'},
-                # debounce=True
-            ),
+                style={'width': '30%', 'display': 'inline-block', 'padding-right': '10px'}),
             dbc.Button("Search", id="search-button2", className="mr-2", style={'display': 'inline-block'}),
         ],
-        style={'padding-left': '30px', 'padding-bottom': '20px', 'padding-top': '40px'},
+        style={'padding-left': '30px', 'padding-bottom': '10px', 'padding-top': '40px'},
     ),
+
+    dbc.Row(html.P(id='err', style={'color': 'red', 'textAlign': 'left'}),
+            style={'padding-left': '30px'}),
 
     # html.Div(
     #     dcc.Graph(
@@ -86,38 +91,31 @@ layout = html.Div([
                 dbc.Checklist(
                     id='filterManager2',
                     options=[],
-                    value=[],
-                ),
-                label='Filter Table by Fund Family',
-            ),
-            style={'width': 'auto', 'display': 'inline-block', 'padding-left': '30px', 'padding-right': '10px'}
-        ),
+                    value=[]),
+                label='Filter Table by Fund Manager',),
+            style={'width': 'auto', 'display': 'inline-block', 'padding-left': '30px', 'padding-right': '10px'}),
 
         html.Div(
             dbc.DropdownMenu(
                 dbc.Checklist(
                     id='filterDate2',
                     options=[],
-                    value=[],
-                ),
-                label='Filter Table by Valuation Date',
-            ),
-            style={'width': 'auto', 'display': 'inline-block'}
-        ),
+                    value=[],),
+                label='Filter Table by Valuation Date',),
+            style={'width': 'auto', 'display': 'inline-block'}),
 
-        html.Div(
-            dbc.RadioItems(
-                options=[
-                    {"label": "Link to html filings", "value": 1},
-                    {"label": "Link to text filings", "value": 2},
-                ],
-                value=1,
-                id="link-input2",
-            ),
-            style={'display':'inline-block', 'padding-left': '20px'}
-        ),
+        # html.Div(
+        #     dbc.RadioItems(
+        #         options=[
+        #             {"label": "Link to html filings", "value": 1},
+        #             {"label": "Link to text filings", "value": 2},
+        #         ],
+        #         value=1,
+        #         id="link-input2"),
+        #     style={'display':'inline-block', 'padding-left': '20px'}),
+
         ],
-    style={'padding-bottom': '10px'}
+        style={'padding-bottom': '10px'}
     ),
 
     html.Div(
@@ -141,6 +139,7 @@ layout = html.Div([
     Output(component_id='filterManager2', component_property='value'),
     Output(component_id='filterDate2', component_property='options'),
     Output(component_id='filterDate2', component_property='value'),
+    Output(component_id='err', component_property='children'),
     Input(component_id='search-button2', component_property='n_clicks'),
     Input(component_id='search-input2', component_property='n_submit'),
     State(component_id='search-input2', component_property='value'),
@@ -148,15 +147,18 @@ layout = html.Div([
 def update_graph(n_clicks, n_submit, input_value):
     if input_value is None:
         raise dash.exceptions.PreventUpdate
-    if len(input_value) <=3:
-        return dash.no_update, 'Please enter at least 3 characters'
+    if len(input_value) <= 3:
+        return dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update, 'Please enter at least 3 characters'
     else:
         tmptable = gen_table(input_value)
-        manageroptions = [{'label': i, 'value': i} for i in sorted(tmptable['fundfamily'].unique())]
-        managerval = sorted(tmptable['fundfamily'].unique())
-        dateoptions = [{'label': i, 'value': i} for i in sorted(tmptable['valDate'].unique(), reverse=True)]
-        dateval = sorted(tmptable['valDate'].unique(), reverse=True)
-        return tmptable.to_dict('records'), manageroptions, managerval, dateoptions, dateval
+        if len(tmptable) == 0:
+            return dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update, 'No data matching key word found'
+        else:
+            manageroptions = [{'label': i, 'value': i} for i in sorted(tmptable['fundManager'].astype(str).unique())]
+            managerval = sorted(tmptable['fundManager'].astype(str).unique())
+            dateoptions = [{'label': i, 'value': i} for i in sorted(tmptable['valDate'].unique(), reverse=True)]
+            dateval = sorted(tmptable['valDate'].unique(), reverse=True)
+            return tmptable.to_dict('records'), manageroptions, managerval, dateoptions, dateval, ''
     # return sd.gen_fig(input_value), tmptable.to_dict('records'), manageroptions, managerval, dateoptions, dateval
 
 
@@ -168,5 +170,5 @@ def update_graph(n_clicks, n_submit, input_value):
 )
 def filter_table(selectmanager, selectdate, data):
     tmptable = pd.DataFrame.from_dict(data)
-    tmptable = tmptable[tmptable['fundfamily'].isin(selectmanager) & tmptable['valDate'].isin(selectdate)]
+    tmptable = tmptable[tmptable['fundManager'].isin(selectmanager) & tmptable['valDate'].isin(selectdate)]
     return tmptable.to_dict('records')

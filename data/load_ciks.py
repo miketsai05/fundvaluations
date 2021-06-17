@@ -1,8 +1,7 @@
-# GET CIKS, RETRIEVE NCEN
+# TO DO finish check_fundManager()
 
-#LOAD MUTUAL FUND CIKs, CHECK IF EACH MUTUAL FUND HAS LVL3 INVESTMENTS
-# return most recent first
-# startdate/endate relates to filing date
+
+# Notes:
 # CIK Number: no leading zeros
 # CIK: 10 digits - include leading zeros
 
@@ -220,11 +219,32 @@ def check_lvl3(subset='nan', check_date=datetime(2020, 12, 31)):
 #
 #     # return len(new_urls.CIK)
 
-def gen_fundManager():
+def check_fundManager():
 
     cikfilename = 'master_ciks.pkl'
     master_ciks = pd.read_pickle(cikfilename)
 
+    # MASTER HOLDINGS DATE --> MERGE
+    # SELECT ROWS WHERE fundManager == nan
+
+def map_fundManager():
+
+    cikfilename = 'master_ciks.pkl'
+    master_ciks = pd.read_pickle(cikfilename)
+
+    master_ciks['fundManager_raw'] = np.nan
+
+    famind = master_ciks['fundfamily']==master_ciks['fundfamily']
+
+    master_ciks.loc[famind, 'fundManager_raw'] = master_ciks.loc[famind, 'fundfamily']
+    master_ciks.loc[~famind, 'fundManager_raw'] = master_ciks.loc[~famind, 'Entity Name']
+
+    fund_map = pd.read_excel('data/master_funds.xlsx', sheet_name='allfund_map')
+    fund_map.set_index('fundManager_raw', inplace=True)
+
+    master_ciks['fundManager'] = master_ciks['fundManager_raw'].map(fund_map.squeeze())
+
+    master_ciks.to_pickle(cikfilename)
 
 
 def main():

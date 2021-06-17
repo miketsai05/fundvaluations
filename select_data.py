@@ -1,12 +1,15 @@
-# Separate each Fund Manager into a different trace so hover works even if same per share valuation
-# Fund Manager specific color throughout
+# -
 
-# add annotations for funding round
+# TO DO Separate each Fund Manager into a different trace so hover works even if same per share valuation
+
+# roadmap add annotations for funding round
 
 
 import pandas as pd
 import plotly.express as px
 import numpy as np
+
+
 
 
 def search_select(search_name):
@@ -31,7 +34,7 @@ def merge_data(select_holdings, unicornflag=False):
     holdings_cols = ['accessNum', 'name', 'title', 'balance', 'curCd', 'valUSD', 'units', 'assetCat']
     if unicornflag: holdings_cols.append('unicorn')
 
-    cik_cols = ['CIK Number', 'CIK', 'Entity Name', 'infamily', 'fundfamily']
+    cik_cols = ['CIK Number', 'CIK', 'Entity Name', 'infamily', 'fundfamily', 'fundManager']
     cikfilename = "data/master_ciks.pkl"
     master_ciks = pd.read_pickle(cikfilename)
 
@@ -119,15 +122,15 @@ def select_unicorns():
 
     unicorn_data = merge_data(select_data, unicornflag=True)
 
-    famind = unicorn_data['fundfamily']==unicorn_data['fundfamily']
-
-    unicorn_data['fundManager_raw'] = np.nan
-    unicorn_data.loc[famind, 'fundManager_raw'] = unicorn_data.loc[famind, 'fundfamily']
-    unicorn_data.loc[~famind, 'fundManager_raw'] = unicorn_data.loc[~famind, 'Entity Name']
-
-    fund_map = pd.read_excel('data/master_funds.xlsx', sheet_name='fund_map')
-    fund_map.set_index('fundManager_raw', inplace=True)
-    unicorn_data['fundManager'] = unicorn_data['fundManager_raw'].map(fund_map.squeeze())
+    # famind = unicorn_data['fundfamily']==unicorn_data['fundfamily']
+    #
+    # unicorn_data['fundManager_raw'] = np.nan
+    # unicorn_data.loc[famind, 'fundManager_raw'] = unicorn_data.loc[famind, 'fundfamily']
+    # unicorn_data.loc[~famind, 'fundManager_raw'] = unicorn_data.loc[~famind, 'Entity Name']
+    #
+    # fund_map = pd.read_excel('data/master_funds.xlsx', sheet_name='fund_map')
+    # fund_map.set_index('fundManager_raw', inplace=True)
+    # unicorn_data['fundManager'] = unicorn_data['fundManager_raw'].map(fund_map.squeeze())
 
     unicorn_data_grouped = group_data(unicorn_data, 'fundManager', unicornflag=True)
 
