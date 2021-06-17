@@ -157,7 +157,10 @@ def select_unicorns():
     unicorn_data.loc[~famind, 'fundManager_raw'] = unicorn_data.loc[~famind, 'Entity Name']
 
     fund_map = pd.read_excel('data/master_funds.xlsx', sheet_name='fund_map')
+    fund_map.set_index('fundManager_raw', inplace=True)
+    unicorn_data['fundManager'] = unicorn_data['fundManager_raw'].map(fund_map.squeeze())
 
+    unicorn_data_grouped = group_data(unicorn_data, 'fundManager', unicornflag=True)
 
     # unicorn_data_grouped = group_data(unicorn_data[famind], 'fundfamily', unicornflag=True)
     # unicorn_data_grouped = unicorn_data_grouped.append(group_data(unicorn_data[~famind], 'Entity Name', unicornflag=True))
@@ -182,10 +185,10 @@ def gen_fig_fromgdata(gdata, graphtitle=''):
                      y='pershare',
                      title=graphtitle,
                      size='normbalance',
-                     color='fundfamily',
+                     color='fundManager',
                      template='simple_white',
-                     hover_name='fundfamily',
-                     custom_data=['valDatestr', 'balance', 'fundfamily']
+                     hover_name='fundManager',
+                     custom_data=['valDatestr', 'balance', 'seriesname']
                      )
 
     fig.update_layout(
@@ -196,7 +199,7 @@ def gen_fig_fromgdata(gdata, graphtitle=''):
             yaxis_title='Per Share Valuation',
             yaxis_tickformat='$.2f',
             yaxis_rangemode='tozero',
-            legend_title='Fund Family',
+            legend_title='Fund Manager',
             title={
                 'x': 0.5,
                 'y': 0.9,
@@ -213,7 +216,7 @@ def gen_fig_fromgdata(gdata, graphtitle=''):
             #marker_opacity=1,
             opacity=0.6,
             hovertemplate=
-                '<b>Fund Family:</b> %{hovertext}<br>'
+                '<b>Fund Manager:</b> %{hovertext}<br>'
                 '<b>Valuation Date:</b> %{customdata[0]}<br>'
                 '<b>Per Share Valuation:</b> %{y:$0.2f}<br>'
                 '<b>Aggregate Number of Shares:</b> %{customdata[1]:0,000}<br><br>'
