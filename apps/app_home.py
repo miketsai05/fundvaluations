@@ -92,8 +92,8 @@ layout = html.Div([
 
                 dbc.Row(
                     dbc.Col(
-                        html.Label('Level 3 valuations from 2000+ mutual funds including:'),
-                        style={'verticalAlign': 'bottom', 'border': '1px solid green'})
+                        html.Label('Valuations from over 2000+ mutual funds including:'),
+                        style={'verticalAlign': 'center', 'border': '1px solid green', 'font-size': 12})
                 ),
 
                 dbc.Row(

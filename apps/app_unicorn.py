@@ -1,10 +1,10 @@
-#TO DO fix hover
-#TO DO add filter for asset type
-#TO DO fundmanager combine fundfamily if not then name
+
+
+
 #TO DO add specific colors per fundmanager
+
+
 #TO DO callback to change sec link from html to txt (maybe add hover to explain)
-
-
 #TO DO show debt as separate table as percentage of par split based on NS vs PA
 #TO DO add toggle to change size of points on graph
 
@@ -24,16 +24,20 @@ from apps.navbar import gen_navbar
 from app import app
 
 
-def gen_table(unicorn_name):
+def gen_table(unicorn_name, selected_units):
 
     cols = ['unicorn', 'fundManager', 'seriesname', 'valDate', 'pershare', 'balance', 'name', 'title', 'filingURL'] #don't need this in both functions
-    tmptable = unicorn_data[unicorn_data['unicorn']==unicorn_name][cols].copy()
+    unicorn_ind = unicorn_data['unicorn'] == unicorn_name
+    unit_ind = unicorn_data['units'].isin(selected_units)
+    tmptable = unicorn_data[ (unicorn_ind & unit_ind) ][cols].copy()
     tmptable['Fund_xml'] = '['+tmptable['seriesname'].astype(str)+']('+tmptable['filingURL'].str[:-4]
     tmptable['Fund_xml'] = tmptable['Fund_xml'].str.replace('-', '')+'/xslFormNPORT-P_X01/primary_doc.xml)'
     tmptable['Fund_html']= '['+tmptable['seriesname'].astype(str)+']('+tmptable['filingURL'].astype(str)+')'
     tmptable['valDate'] = tmptable['valDate'].dt.date
 
-    return tmptable
+    available_units = list(set(unicorn_data[unicorn_ind]['units']))
+
+    return tmptable, available_units
 
 
 def gen_table_format():
@@ -76,16 +80,24 @@ layout = html.Div([
             id='company-input',
             options=[{'label': x, 'value': x} for x in unicornset if x.lower() in havedata],
             value='Bytedance',
-            clearable=False
-        )
-        ],
+            clearable=False),
+        dbc.Label('Asset Type', style={'padding-top': '15px'}),
+        dbc.Checklist(
+            options=[
+                {'label': 'Equity', 'value': 'NS'},
+                {'label': 'Debt', 'value': 'PA'},
+                {'label': 'Derivatives', 'value': 'NC', 'disabled': True},
+                {'label': 'Other', 'value': 'OU', 'disabled': True}
+            ],
+            value=['NS'],
+            id='unitType',
+            switch=True
+        )],
         style={'padding-top': '5%', 'padding-left': '10px', 'width': '20%', 'display': 'inline-block', 'vertical-align': 'top'}
     ),
 
     html.Div(
-        dcc.Graph(
-            id='valuations-graph'
-        ),
+        dcc.Graph(id='valuations-graph'),
         style={'width': '79%', 'display': 'inline-block', 'vertical-align': 'top'}
     ),
 
@@ -95,38 +107,30 @@ layout = html.Div([
                 dbc.Checklist(
                     id='filterManager',
                     options=[],
-                    value=[],
-                ),
-                label='Filter Table by Fund Manager',
-            ),
-            style={'width': 'auto', 'display': 'inline-block', 'padding-left': '30px', 'padding-right': '10px'}
-        ),
+                    value=[],),
+                label='Filter Table by Fund Manager',),
+            style={'width': 'auto', 'display': 'inline-block', 'padding-left': '30px', 'padding-right': '10px'}),
 
         html.Div(
             dbc.DropdownMenu(
                 dbc.Checklist(
                     id='filterDate',
                     options=[],
-                    value=[],
-                ),
-                label='Filter Table by Valuation Date',
-            ),
-            style={'width': 'auto', 'display': 'inline-block'}
-        ),
+                    value=[],),
+                label='Filter Table by Valuation Date',),
+            style={'width': 'auto', 'display': 'inline-block'}),
 
-        html.Div(
-            dbc.RadioItems(
-                options=[
-                    {"label": "Link to html filings", "value": 1},
-                    {"label": "Link to text filings", "value": 2},
-                ],
-                value=1,
-                id="link-input",
-            ),
-            style={'display':'inline-block', 'padding-left': '20px'}
-        ),
+        # html.Div(
+        #     dbc.RadioItems(
+        #         options=[
+        #             {"label": "Link to html filings", "value": 1},
+        #             {"label": "Link to text filings", "value": 2},
+        #         ],
+        #         value=1,
+        #         id="link-input",),
+        #     style={'display': 'inline-block', 'padding-left': '20px'})
         ],
-    style={'padding-bottom': '10px'}
+        style={'padding-bottom': '10px'}
     ),
 
     html.Div(
@@ -135,8 +139,7 @@ layout = html.Div([
             columns=gen_table_format(),
             style_header={'fontWeight': 'bold', 'whiteSpace': 'normal', 'padding-left': '5px', 'padding-right': '5px'},
             style_cell={'textAlign': 'center'},
-            sort_action='native',
-        )
+            sort_action='native',)
     )
 
 ])
@@ -151,19 +154,43 @@ layout = html.Div([
     Output(component_id='filterManager', component_property='value'),
     Output(component_id='filterDate', component_property='options'),
     Output(component_id='filterDate', component_property='value'),
-    Input(component_id='company-input', component_property='value')
+    Output(component_id='unitType', component_property='options'),
+    Input(component_id='company-input', component_property='value'),
+    Input(component_id='unitType', component_property='value')
 )
-def update_graph(input_value):
-    tmptable = gen_table(input_value)
+def update_graph(input_value, selected_units):
+    if len(selected_units) == 0:
+        selected_units = ['NS']
+    tmptable, available_units = gen_table(input_value, selected_units)
+
+    lunit = ['Equity', 'Debt', 'Derivatives', 'Other']
+    vunit = ['NS', 'PA', 'NC', 'OU']
+    dunit = [x not in available_units for x in vunit]
+    unitoptions = [{'label': l, 'value': v, 'disabled': d} for l, v, d in zip(lunit, vunit, dunit)]
+
     manageroptions = [{'label': i, 'value': i} for i in sorted(tmptable['fundManager'].astype(str).unique())]
     managerval = sorted(tmptable['fundManager'].astype(str).unique())
+
     dateoptions = [{'label': i, 'value': i} for i in sorted(tmptable['valDate'].unique(), reverse=True)]
     dateval = sorted(tmptable['valDate'].unique(), reverse=True)
-    # if len(tmptable)>0:
-    outfig = sd.gen_fig(input_value)
-    # else:
-    #     outfig = px.scatter
-    return outfig, tmptable.to_dict('records'), manageroptions, managerval, dateoptions, dateval
+
+    outfig = sd.gen_fig(input_value, selected_units)
+
+    return outfig, tmptable.to_dict('records'), manageroptions, managerval, dateoptions, dateval, unitoptions
+
+
+# @app.callback(
+#     Output(component_id='valuations-graph', component_property='figure'),
+#     Output(component_id='table-memory', component_property='data'),
+#     Output(component_id='filterManager', component_property='options'),
+#     Output(component_id='filterManager', component_property='value'),
+#     Output(component_id='filterDate', component_property='options'),
+#     Output(component_id='filterDate', component_property='value'),
+#     Output(component_id='unitType', component_property='options'),
+#     Output(component_id='unitType', component_property='value'),
+#     Input(component_id='unitType', component_property='value')
+# )
+
 
 
 @app.callback(

@@ -1,5 +1,6 @@
 # type of investments
 #TO DO remove nan from fundfamilies
+#TO DO change fund families to fundManager
 
 #TO DO trend?? - # marking up, # marking down - sort by biggest options, YoY, QoQ, MoM
 #TO DO link each unicorn to individual page

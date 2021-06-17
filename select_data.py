@@ -1,38 +1,7 @@
 # Separate each Fund Manager into a different trace so hover works even if same per share valuation
 # Fund Manager specific color throughout
+
 # add annotations for funding round
-
-# NEED TO DISTINGUISH ==>>
-# UNITS = NS is number of shares,
-#         PA is principal amount,
-#         NC is number of contracts,
-#         OU is other units
-# assetCat =
-        # 'ABS-CBDO' - ABS-collateralized bond/debt obligation
-        #  'ABS-MBS' - ABS-mortgage backed security
-        #  'ABS-O' - ABS-other
-        #  'DBT' - debt
-        #  'DCO' - derivative-commodity
-        #  'DCR' - derivative-credit
-        #  'DE' - derivative-equity
-        #  'DIR' - derivative-interest rate
-        #  'EC' - equity-common
-        #  'EP' - equity preferred
-        #  'LON' - loan
-        #  'None'
-        #  'SN' - structured note
-        #  'STIV' - short-term investment vehicle (e.g., money market fund, liquidity pool, or other cash management vehicle
-
-# Asset type (short-term investment vehicle (e.g., money market fund, liquidity pool,
-# or other cash management vehicle), repurchase agreement, equity-common, equity-preferred,
-# debt, derivative-commodity, derivative-credit, derivative-equity, derivative-foreign exchange,
-# derivative-interest rate, derivatives-other, structured note, loan, ABS-mortgage backed security,
-# ABS-asset backed commercial paper, ABS-collateralized bond/debt obligation, ABS-other,
-# commodity, real estate, other). If “other,” provide a brief description.
-
-# Fund Family: master_ciks['fundfamily'] or Fund Manager
-# Fund Manager: master_ciks['Entity Name']
-# Fund: master_urls['seriesname']
 
 
 import pandas as pd
@@ -162,17 +131,16 @@ def select_unicorns():
 
     unicorn_data_grouped = group_data(unicorn_data, 'fundManager', unicornflag=True)
 
-    # unicorn_data_grouped = group_data(unicorn_data[famind], 'fundfamily', unicornflag=True)
-    # unicorn_data_grouped = unicorn_data_grouped.append(group_data(unicorn_data[~famind], 'Entity Name', unicornflag=True))
-
     unicorn_data.to_pickle('data/unicorn_data.pkl')
     unicorn_data_grouped.to_pickle('data/unicorn_data_grouped.pkl')
 
 
-def gen_fig(unicorn_name):
+def gen_fig(unicorn_name, selected_units):
 
     unicorn_data_grouped = pd.read_pickle('data/unicorn_data_grouped.pkl')
-    gdata = unicorn_data_grouped[unicorn_data_grouped['unicorn'] == unicorn_name].copy()
+    unicorn_ind = unicorn_data_grouped['unicorn'] == unicorn_name
+    unit_ind = unicorn_data_grouped['units'].isin(selected_units)
+    gdata = unicorn_data_grouped[(unicorn_ind & unit_ind)].copy()
 
     return gen_fig_fromgdata(gdata, unicorn_name)
 
