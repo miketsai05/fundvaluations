@@ -63,11 +63,11 @@ def gen_thumbnail2(imgname, url, fund):
                 href=url,
                 target='_blank'
             ),
-            style={'border': '2px solid blue', 'textAlign': 'center'})
+            style={'textAlign': 'center'})
     )
 
 
-master_funds = pd.read_excel('data/master_funds.xlsx', sheet_name = 'fund_details')
+master_funds = pd.read_excel('data/master_funds.xlsx', sheet_name='fund_details')
 images_div = []
 for i in range(master_funds.shape[0]):
     images_div.append(gen_thumbnail2(master_funds.logo[i], master_funds.url[i], master_funds.fund[i]))
@@ -87,19 +87,19 @@ layout = html.Div([
                         html.Img(
                             src=app.get_asset_url(sec_imgname),
                             style={'width': 'auto', 'height': 'auto'}),
-                        style={'padding-bottom': '20px', 'textAlign': 'center', 'border': '1px solid grey'}),
+                        style={'padding-bottom': '20px', 'textAlign': 'center'}),
                 ),
 
                 dbc.Row(
                     dbc.Col(
                         html.Label('Valuations from over 2000+ mutual funds including:'),
-                        style={'verticalAlign': 'center', 'border': '1px solid green', 'font-size': 12})
+                        style={'verticalAlign': 'center', 'font-size': 12})
                 ),
 
                 dbc.Row(
                     dbc.Col(
                         images_div,
-                        style={'border': '1px solid red'}))],
+                        style={}))],
 
                 width=2,
                 style={'padding-bottom': '30px', 'textAlign': 'center'}

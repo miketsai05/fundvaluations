@@ -1,6 +1,3 @@
-
-
-
 #TO DO add specific colors per fundmanager
 
 
@@ -138,7 +135,7 @@ layout = html.Div([
             id='table1',
             columns=gen_table_format(),
             style_header={'fontWeight': 'bold', 'whiteSpace': 'normal', 'padding-left': '5px', 'padding-right': '5px'},
-            style_cell={'textAlign': 'center'},
+            style_cell={'textAlign': 'center', 'font-family': 'sans-serif', 'whiteSpace': 'normal'},
             sort_action='native',)
     )
 

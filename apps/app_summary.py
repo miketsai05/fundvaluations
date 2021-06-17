@@ -91,7 +91,8 @@ layout = html.Div([
             },
             style_cell={
                 'textAlign': 'center',
-                'lineHeight': '15px'
+                'lineHeight': '15px',
+                'font-family': 'sans-serif'
             },
             style_data={
                 'whiteSpace': 'normal',
