@@ -31,7 +31,7 @@ def gen_thumbnail(imgname, url, fund):
                     'height': 'auto',
                     'float': 'left',
                     'position': 'relative',
-                    'padding-bottom': 5,
+                    'padding-bottom': 10,
                     'padding-right': 0
                 }
             ),

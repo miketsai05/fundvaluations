@@ -1,4 +1,5 @@
 #TO DO add graph
+#TO DO - return nothing if no results
 
 import dash
 from dash.dependencies import Input, Output, State
