@@ -1,6 +1,5 @@
-# -
+# TO DO  add column to exclude certain keywords/phrases
 
-# TO DO Separate each Fund Manager into a different trace so hover works even if same per share valuation
 
 # roadmap add annotations for funding round
 

@@ -1,3 +1,5 @@
+# TO DO Separate each Fund Manager into a different trace so hover works even if same per share valuation
+
 import pandas as pd
 import plotly.express as px
 
