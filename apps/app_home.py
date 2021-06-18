@@ -49,8 +49,8 @@ def gen_thumbnail2(imgname, url, fund):
                 html.Img(
                     src = app.get_asset_url(imgname),
                     style = {
-                        'width': '160px',
-                        'height': '50px',
+                        'width': '120px',
+                        'height': '40px',
                         'object-fit': 'contain',  # HOW TO GET THIS TO WORK?
                         # 'max-height': '50px',
                         # 'max-width': '160px',
@@ -82,34 +82,36 @@ layout = html.Div([
 
         dbc.Row([
 
-            dbc.Col([
+            dbc.Col(width=1),
 
-                dbc.Row(
-                    dbc.Col(
-                        html.A(
-                            html.Img(
-                                src=app.get_asset_url(sec_imgname),
-                                style={'width': 'auto', 'height': 'auto'}),
-                            href='https://www.sec.gov/edgar/search-and-access',
-                            target='_blank'
-                        ),
-                    style={'padding-bottom': '20px', 'textAlign': 'center'}),
-                ),
-
-                dbc.Row(
-                    dbc.Col(
-                        html.Label('Valuations aggregated from over 2000+ mutual funds including funds managed by:'),
-                        style={'verticalAlign': 'center', 'font-size': 12})
-                ),
-
-                dbc.Row(
-                    dbc.Col(
-                        images_div,
-                        style={}))],
-
-                width=3, #2
-                style={'padding-bottom': '30px', 'textAlign': 'center'}
-            ),
+            # dbc.Col([
+            #
+            #     dbc.Row(
+            #         dbc.Col(
+            #             html.A(
+            #                 html.Img(
+            #                     src=app.get_asset_url(sec_imgname),
+            #                     style={'width': 'auto', 'height': 'auto'}),
+            #                 href='https://www.sec.gov/edgar/search-and-access',
+            #                 target='_blank'
+            #             ),
+            #             style={'padding-bottom': '20px', 'textAlign': 'center'}),
+            #     ),
+            #
+            #     dbc.Row(
+            #         dbc.Col(
+            #             html.Label('Valuations aggregated from over 2000+ mutual funds including funds managed by:'),
+            #             style={'verticalAlign': 'center', 'font-size': 12})
+            #     ),
+            #
+            #     dbc.Row(
+            #         dbc.Col(
+            #             images_div,
+            #             style={}))],
+            #
+            #     width=2,
+            #     style={'padding-bottom': '30px', 'textAlign': 'center'}
+            # ),
 
             dbc.Col(
                 html.Div([
@@ -171,6 +173,35 @@ layout = html.Div([
                     ''')),
                 ]),
                 width=8), #7
+
+            dbc.Col([
+
+                dbc.Row(
+                    dbc.Col(
+                        html.A(
+                            html.Img(
+                                src=app.get_asset_url(sec_imgname),
+                                style={'width': 'auto', 'height': 'auto'}),
+                            href='https://www.sec.gov/edgar/search-and-access',
+                            target='_blank'
+                        ),
+                        style={'padding-bottom': '20px', 'textAlign': 'center'}),
+                ),
+
+                dbc.Row(
+                    dbc.Col(
+                        html.Label('Valuations aggregated from over 2000+ mutual funds including funds managed by:'),
+                        style={'verticalAlign': 'center', 'font-size': 12})
+                ),
+
+                dbc.Row(
+                    dbc.Col(
+                        images_div,
+                        style={}))],
+
+                width=2,
+                style={'padding-bottom': '30px', 'textAlign': 'center'}
+            ),
 
         #     dbc.Col([
         #         dbc.Row(html.Div(tmptext)),
