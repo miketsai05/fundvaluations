@@ -1,5 +1,6 @@
 #-
 
+#TO DO on callback, change pagination to page 1
 #TO DO show debt as separate table as percentage of par split based on NS vs PA
 #TO DO add toggle to change size of points on graph
 #TO DO callback to change sec link from html to txt (maybe add hover to explain)
@@ -16,7 +17,7 @@ from dash_table.Format import Format, Scheme
 import dash_bootstrap_components as dbc
 import plotly.express as px
 import pandas as pd
-import select_data as sd
+import graph_data as gd
 from apps.navbar import gen_navbar
 
 from app import app
@@ -172,7 +173,7 @@ def update_graph(input_value, selected_units):
     dateoptions = [{'label': i, 'value': i} for i in sorted(tmptable['valDate'].unique(), reverse=True)]
     dateval = sorted(tmptable['valDate'].unique(), reverse=True)
 
-    outfig = sd.gen_fig(input_value, selected_units)
+    outfig = gd.gen_fig(input_value, selected_units)
 
     return outfig, tmptable.to_dict('records'), manageroptions, managerval, dateoptions, dateval, unitoptions
 

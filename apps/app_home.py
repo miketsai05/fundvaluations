@@ -12,7 +12,6 @@ from dash_table import FormatTemplate
 from dash_table.Format import Format, Scheme
 import dash_bootstrap_components as dbc
 import pandas as pd
-import select_data as sd
 import apps.navbar as nb
 
 from app import app

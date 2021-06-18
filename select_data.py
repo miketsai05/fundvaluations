@@ -8,7 +8,7 @@
 import pandas as pd
 import plotly.express as px
 import numpy as np
-
+import datetime
 
 
 
@@ -34,7 +34,7 @@ def merge_data(select_holdings, unicornflag=False):
     holdings_cols = ['accessNum', 'name', 'title', 'balance', 'curCd', 'valUSD', 'units', 'assetCat']
     if unicornflag: holdings_cols.append('unicorn')
 
-    cik_cols = ['CIK Number', 'CIK', 'Entity Name', 'infamily', 'fundfamily', 'fundManager']
+    cik_cols = ['CIK Number', 'CIK', 'Entity Name', 'infamily', 'fundfamily', 'fundManager', 'fundManager_raw']
     cikfilename = "data/master_ciks.pkl"
     master_ciks = pd.read_pickle(cikfilename)
 
@@ -93,7 +93,9 @@ def search_unicorns(master_holdings, co_name, aka, legal_name, search_legal=Fals
     return unicorn_records
 
 
-def select_unicorns():
+#begindate, enddate, num=1
+
+def select_unicorns(mindays=80, maxdays=100, cutoffdate = datetime.date(2020, 12, 31)):
     """ Loops through unicorns in master_unicorns.xlsx - searches for records.
     Concats all records, merges with URL and CIK data and groups by name, fund manager, valdate and price.
     Saves both selected merged records and grouped data"""
@@ -104,13 +106,18 @@ def select_unicorns():
     unicornsfilename = 'data/master_unicorns.xlsx'
     master_unicorns = pd.read_excel(unicornsfilename)
     master_unicorns = master_unicorns.where(pd.notnull(master_unicorns), None)
+    unicornset = master_unicorns[0:30].copy()
+
+    unicornset['increase'] = None
+    unicornset['flat'] = None
+    unicornset['decrease'] = None
 
     tmp_list = []
 
-    for i in range(0, 30):
-        co_name = master_unicorns.loc[i, 'Company Name']
-        aka = master_unicorns.loc[i, 'aka']
-        legal_name = master_unicorns.loc[i, 'Legal Name']
+    for unicorn in unicornset.itertuples():
+        co_name = unicorn[1] #unicorn['Company Name']
+        aka = unicorn[2] #unicorn['aka']
+        legal_name = unicorn[3] #unicorn['Legal Name']
 
         tmp = search_unicorns(master_holdings, co_name, aka, legal_name)
         tmp['unicorn'] = co_name
@@ -122,86 +129,104 @@ def select_unicorns():
 
     unicorn_data = merge_data(select_data, unicornflag=True)
 
-    # famind = unicorn_data['fundfamily']==unicorn_data['fundfamily']
-    #
-    # unicorn_data['fundManager_raw'] = np.nan
-    # unicorn_data.loc[famind, 'fundManager_raw'] = unicorn_data.loc[famind, 'fundfamily']
-    # unicorn_data.loc[~famind, 'fundManager_raw'] = unicorn_data.loc[~famind, 'Entity Name']
-    #
-    # fund_map = pd.read_excel('data/master_funds.xlsx', sheet_name='fund_map')
-    # fund_map.set_index('fundManager_raw', inplace=True)
-    # unicorn_data['fundManager'] = unicorn_data['fundManager_raw'].map(fund_map.squeeze())
+    for unicorn in list(set(unicorn_data['unicorn'])):
+        valdiff, datediff, increase, flat, decrease, num_outofQ = map_diff(unicorn_data[unicorn_data['unicorn']==unicorn], mindays, maxdays, cutoffdate)
+
+        unicorn_data.loc[valdiff.index, 'QoQvaldiff'] = valdiff
+        unicorn_data.loc[datediff.index, 'QoQdatediff'] = datediff
+        unicornset.loc[unicornset['Company Name'] == unicorn, 'increase'] = increase
+        unicornset.loc[unicornset['Company Name'] == unicorn, 'flat'] = flat
+        unicornset.loc[unicornset['Company Name'] == unicorn, 'decrease'] = decrease
+        if num_outofQ > 0:
+            print('Excluded', num_outofQ, 'entries for ', unicorn)
+
+    unicorn_data['QoQpercentdiff'] = unicorn_data['QoQvaldiff'].divide(unicorn_data['pershare'])
 
     unicorn_data_grouped = group_data(unicorn_data, 'fundManager', unicornflag=True)
 
+    unicorn_summary = unicornset[['Company Name', 'Country', 'Industry', 'increase', 'flat', 'decrease']].copy()
+    unicorn_summary.rename(columns={'Company Name': 'unicorn'}, inplace=True)
+
+    f = {'accessNum': 'count',
+         'fundManager': lambda x: ', '.join(x.astype(str).unique()),
+         'valDate': ['min', 'max']}
+    tmpgrouped = unicorn_data.groupby('unicorn', as_index=False).agg(f)
+    tmpgrouped.columns = ["".join(x) for x in tmpgrouped.columns.ravel()]
+    tmpgrouped['valDaterange'] = tmpgrouped['valDatemin'].astype(str) + ' to ' + tmpgrouped['valDatemax'].astype(str)
+    tmpgrouped['valDatemin'] = tmpgrouped['valDatemin'].dt.strftime('%b %Y')
+    tmpgrouped['valDatemax'] = tmpgrouped['valDatemax'].dt.strftime('%b %Y')
+    # TO DO change this to Mmm YYYY
+
+    # tmpgrouped.drop(columns=['valDatemin', 'valDatemax'], inplace=True)
+    tmpgrouped.rename(columns={'fundManager<lambda>': 'fundManagerunique'}, inplace=True)
+
+    unicorn_summary = unicorn_summary.merge(tmpgrouped, how='left', on='unicorn')
+
     unicorn_data.to_pickle('data/unicorn_data.pkl')
     unicorn_data_grouped.to_pickle('data/unicorn_data_grouped.pkl')
+    unicorn_summary.to_pickle('data/unicorn_summary.pkl')
 
 
-def gen_fig(unicorn_name, selected_units):
+def map_diff( unicorn_subset , mindays, maxdays, cutoffdate):
 
-    unicorn_data_grouped = pd.read_pickle('data/unicorn_data_grouped.pkl')
-    unicorn_ind = unicorn_data_grouped['unicorn'] == unicorn_name
-    unit_ind = unicorn_data_grouped['units'].isin(selected_units)
-    gdata = unicorn_data_grouped[(unicorn_ind & unit_ind)].copy()
+    mindays = datetime.timedelta(days=mindays)
+    maxdays = datetime.timedelta(days=maxdays)
 
-    return gen_fig_fromgdata(gdata, unicorn_name)
+    increase = flat = decrease = num_outofQ = 0
+    valdiff = pd.Series()
+    datediff = pd.Series()
 
+    fundset = list(set(zip(unicorn_subset['CIK'], unicorn_subset['seriesid'], unicorn_subset['name'], unicorn_subset['title'])))
 
-def gen_fig_fromgdata(gdata, graphtitle=''):
-    gdata['valDatestr'] = gdata['valDate'].dt.strftime('%b %d, %Y')
+    for CIK, sid, inv_name, inv_title in fundset:
 
-    fig = px.scatter(gdata,
-                     x='valDate',
-                     y='pershare',
-                     title=graphtitle,
-                     size='normbalance',
-                     color='fundManager',
-                     template='simple_white',
-                     hover_name='fundManager',
-                     custom_data=['valDatestr', 'balance', 'seriesname']
-                     )
+        ind1 = unicorn_subset['CIK'] == CIK
+        ind2 = unicorn_subset['seriesid'] == sid
+        ind3 = unicorn_subset['name'] == inv_name
+        ind4 = unicorn_subset['title'] == inv_title
+        ind = (ind1 & ind2 & ind3 & ind4)
+        funddata = unicorn_subset[ind].sort_values(by='valDate')
 
-    fig.update_layout(
-            xaxis_title='Valuation Date',
-            xaxis_tick0='1989-12-31',
-            xaxis_dtick='M1',
-            xaxis_tickformat='%b %d<br>%Y',
-            yaxis_title='Per Share Valuation',
-            yaxis_tickformat='$.2f',
-            yaxis_rangemode='tozero',
-            legend_title='Fund Manager',
-            title={
-                'x': 0.5,
-                'y': 0.9,
-                'xanchor': 'center',
-                'yanchor': 'top',
-                'font_family': 'Arial',
-                'font_size': 28,
-            }
-    )
+        funddata.drop_duplicates(subset=['valDate','pershare'], inplace=True)
 
-    fig.update_traces(
-            #mode='lines+markers',
-            #marker_symbol='square',
-            #marker_opacity=1,
-            opacity=0.6,
-            hovertemplate=
-                '<b>Fund Manager:</b> %{hovertext}<br>'
-                '<b>Valuation Date:</b> %{customdata[0]}<br>'
-                '<b>Per Share Valuation:</b> %{y:$0.2f}<br>'
-                '<b>Aggregate Number of Shares:</b> %{customdata[1]:0,000}<br><br>'
-                '<b>Held By:</b> <br>%{customdata[2]}'
-                '<extra></extra>',
-            hoverlabel=None
-    )
+        if not funddata['valDate'].is_unique:
+            print('Check ', CIK, sid, inv_name, inv_title)
 
-    return fig
+        ddiff = funddata['valDate'].diff()
+        vdiff = funddata['pershare'].diff()
+
+        ind1 = ddiff < mindays
+        ind2 = ddiff > maxdays
+        ind = ind1 | ind2
+        num_outofQ += sum(ind)
+
+        if sum(ind) > 0:
+            print('Excluding', sum(ind), 'entries - not quarter over quarter change for', CIK, sid, inv_name, inv_title)
+            ddiff[ind] = np.nan
+            vdiff[ind] = np.nan
+
+        lastvalDate = funddata.tail(1)['valDate'].values[0]
+        lastvdiff = vdiff.tail(1).values[0]
+
+        if lastvalDate > pd.Timestamp(cutoffdate) and not np.isnan(lastvdiff):
+            if lastvdiff > 0:
+                increase += 1
+            if lastvdiff == 0:
+                flat += 1
+            if lastvdiff < 0:
+                decrease +=1
+
+        datediff = datediff.append(ddiff)
+        valdiff = valdiff.append(vdiff)
+
+    return valdiff, datediff, increase, flat, decrease, num_outofQ
+
 
 
 if __name__ == "__main__":
     select_unicorns()
     unicorn_data = pd.read_pickle('data/unicorn_data.pkl')
     unicorn_data_grouped = pd.read_pickle('data/unicorn_data_grouped.pkl')
-    fundManager_unique = sorted(set(unicorn_data['fundManager_raw']))
+    unicorn_summary = pd.read_pickle('data/unicorn_summary.pkl')
+    # fundManager_unique = sorted(set(unicorn_data['fundManager_raw']))
 

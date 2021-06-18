@@ -159,7 +159,7 @@ def update_graph(n_clicks, n_submit, input_value):
             dateoptions = [{'label': i, 'value': i} for i in sorted(tmptable['valDate'].unique(), reverse=True)]
             dateval = sorted(tmptable['valDate'].unique(), reverse=True)
             return tmptable.to_dict('records'), manageroptions, managerval, dateoptions, dateval, ''
-    # return sd.gen_fig(input_value), tmptable.to_dict('records'), manageroptions, managerval, dateoptions, dateval
+    # return gd.gen_fig(input_value), tmptable.to_dict('records'), manageroptions, managerval, dateoptions, dateval
 
 
 @app.callback(

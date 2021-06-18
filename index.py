@@ -7,7 +7,7 @@ from apps import app_home, app_summary, app_unicorn, app_search
 
 
 app.layout = html.Div([
-    dcc.Location(id='url', pathname='/apps/app_home', refresh=False),
+    dcc.Location(id='url', refresh=False),
     html.Div(id='page-content')
 ])
 
@@ -15,7 +15,7 @@ app.layout = html.Div([
 @app.callback(Output('page-content', 'children'),
               Input('url', 'pathname'))
 def display_page(pathname):
-    if pathname == '/apps/app_home':
+    if pathname == '/apps/app_home' or pathname == '':
         return app_home.layout
     elif pathname == '/apps/app_summary':
         return app_summary.layout
