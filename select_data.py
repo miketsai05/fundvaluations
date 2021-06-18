@@ -72,11 +72,12 @@ def group_data(merged_data, group_on, unicornflag=False):
     return data_grouped
 
 
-def search_unicorns(master_holdings, co_name, aka, legal_name, search_legal=False, threshold=0.5):
+def search_unicorns(master_holdings, co_name, aka, legal_name, exclude, search_legal=False, threshold=0.5):
     """ Searches for relevant unicorn records in master_holdings.pkl given unicorn name, aka or legal name """
 
     ind1 = master_holdings['name'].str.lower().str.contains(co_name.lower())
     ind2 = pd.Series(np.full(len(master_holdings), False, dtype=bool), index=master_holdings.index)
+    excludeind = pd.Series(np.full(len(master_holdings), False, dtype=bool), index=master_holdings.index)
     # ind3 = ind2
 
     if aka:
@@ -87,7 +88,14 @@ def search_unicorns(master_holdings, co_name, aka, legal_name, search_legal=Fals
     # if search_legal:
         # to do - implement fuzzy search??
 
-    unicorn_records = master_holdings[ind1|ind2].copy()
+    if exclude:
+        exclude_list = [item.strip() for item in exclude.split(',')]
+        for exclude_name in exclude_list:
+            excludeind = excludeind | master_holdings['name'].str.lower().str.contains(exclude_name.lower())
+
+    final_ind = (ind1 | ind2) & (~excludeind)
+
+    unicorn_records = master_holdings[final_ind].copy()
 
     return unicorn_records
 
@@ -117,8 +125,9 @@ def select_unicorns(mindays=80, maxdays=100, cutoffdate = datetime.date(2020, 12
         co_name = unicorn[1] #unicorn['Company Name']
         aka = unicorn[2] #unicorn['aka']
         legal_name = unicorn[3] #unicorn['Legal Name']
+        exclude = unicorn[4]
 
-        tmp = search_unicorns(master_holdings, co_name, aka, legal_name)
+        tmp = search_unicorns(master_holdings, co_name, aka, legal_name, exclude)
         tmp['unicorn'] = co_name
         print(co_name)
 

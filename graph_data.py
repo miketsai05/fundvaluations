@@ -12,6 +12,7 @@ def gen_fig(unicorn_name, selected_units):
 
     return gen_fig_fromgdata(gdata, unicorn_name)
 
+#DJI issue = DJIBOUTI is debt instrument but filtering for NS equity
 
 def gen_fig_fromgdata(gdata, graphtitle=''):
     gdata['valDatestr'] = gdata['valDate'].dt.strftime('%b %d, %Y')

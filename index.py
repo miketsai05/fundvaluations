@@ -13,9 +13,10 @@ app.layout = html.Div([
 
 
 @app.callback(Output('page-content', 'children'),
-              Input('url', 'pathname'))
+              Input('url', 'pathname'),
+              prevent_initial_call=True)
 def display_page(pathname):
-    if pathname == '/apps/app_home' or pathname == '':
+    if pathname == '/apps/app_home':
         return app_home.layout
     elif pathname == '/apps/app_summary':
         return app_summary.layout
@@ -24,7 +25,7 @@ def display_page(pathname):
     elif pathname == '/apps/app_search':
         return app_search.layout
     else:
-        return '404'
+        return app_home.layout
 
 
 if __name__ == '__main__':

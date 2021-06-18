@@ -27,8 +27,8 @@ def gen_thumbnail(imgname, url, fund):
                 src = app.get_asset_url(imgname),
                 style = {
                     # 'object-fit': 'contain', # HOW TO GET THIS TO WORK?
-                    'max-height': '50px',
-                    'max-width': '160px',
+                    'max-height': '40px',
+                    'max-width': '120px',
                     'width': 'auto',
                     'height': 'auto',
                     'float': 'left',
@@ -86,10 +86,14 @@ layout = html.Div([
 
                 dbc.Row(
                     dbc.Col(
-                        html.Img(
-                            src=app.get_asset_url(sec_imgname),
-                            style={'width': 'auto', 'height': 'auto'}),
-                        style={'padding-bottom': '20px', 'textAlign': 'center'}),
+                        html.A(
+                            html.Img(
+                                src=app.get_asset_url(sec_imgname),
+                                style={'width': 'auto', 'height': 'auto'}),
+                            href='https://www.sec.gov/edgar/search-and-access',
+                            target='_blank'
+                        ),
+                    style={'padding-bottom': '20px', 'textAlign': 'center'}),
                 ),
 
                 dbc.Row(
@@ -103,7 +107,7 @@ layout = html.Div([
                         images_div,
                         style={}))],
 
-                width=2,
+                width=3, #2
                 style={'padding-bottom': '30px', 'textAlign': 'center'}
             ),
 
@@ -166,12 +170,12 @@ layout = html.Div([
     
                     ''')),
                 ]),
-                width=7),
+                width=8), #7
 
-            dbc.Col([
-                dbc.Row(html.Div(tmptext)),
-                dbc.Row(html.Div(tmptext))],
-                width=3),
+        #     dbc.Col([
+        #         dbc.Row(html.Div(tmptext)),
+        #         dbc.Row(html.Div(tmptext))],
+        #         width=3),
         ],
         style={'padding-top': '20px'}),
 
