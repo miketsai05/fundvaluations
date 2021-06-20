@@ -137,7 +137,7 @@ layout = html.Div([
     
     The compliance timeline for larger fund groups began with quarter ending March 31, 2019 and for smaller fund 
     groups began with quarter ending March 31, 2020. However, the first 6 months of Form N-PORT filings were kept private
-    so the first publicly available Form N-PORT filings begin with quarter ending September 30, 2019. The submission 
+    so the first publicly available Form N-PORT filings begins with quarter ending September 30, 2019. The submission 
     deadlines are 60 days after each fiscal quarter end.
         
     ## What are Level 3 fair values?
