@@ -121,7 +121,7 @@ layout = html.Div([
     Private equity markets have changed significantly in recent years with firms staying private longer than ever.
     Alongside this shift has been a trend of increasing pre-IPO participation by crossover investors including many mutual funds. 
     
-    Although there is no data source available for the tick by tick valuation of a private company 
+    Since there is no definitive data source available for the tick by tick valuation of a private company 
     as there are for public markets, mutual fund valuations present one of the few observable data points the public 
     can reference for an indication of what these private company shares are valued at. 
     
