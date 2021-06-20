@@ -118,38 +118,28 @@ layout = html.Div([
                     html.P(dcc.Markdown('''  
     ## Overview
     
-    Private equity markets have changed dramatically in recent years with firms staying private longer than ever.
-    Alongside this shift has been an increasing trend of pre-IPO participation by crossover investors including  
-    many mutual funds. 
+    Private equity markets have changed significantly in recent years with firms staying private longer than ever.
+    Alongside this shift has been a trend of increasing pre-IPO participation by crossover investors including many mutual funds. 
     
-    Although there is no definitive data source for the tick by tick valuation of a private company 
-    as there are for public markets, mutual fund valuations provide one of the few observable data points the public 
-    can reference to provide an indication of what these private company shares are valued at. 
+    Although there is no data source available for the tick by tick valuation of a private company 
+    as there are for public markets, mutual fund valuations present one of the few observable data points the public 
+    can reference for an indication of what these private company shares are valued at. 
     
-    This project is intended to help aggregate, visualize and surface Level 3 fair values reported in SEC 
-    N-PORT filing data starting September 30, 2019. 
+    This project is intended to help aggregate and surface Level 3 fair values reported in SEC Form N-PORT filing data 
+    beginning September 30, 2019. 
     
     ## What is Form N-PORT?
     
     In October 2016, the SEC adopted the Investment Company Reporting Modernization rule, introducing Form N-PORT 
     to replace the previously required Form N-Q. Form N-PORT requires funds to report complete portfolio holdings 
-    details on a position by position basis. Registered Investment Companies (RICs) must submit monthly N-PORT 
-    reports although only the fiscal quarter end N-PORT reports are made available to the public
+    details on a position by position basis. Registered Investment Companies (RICs) must submit monthly Form N-PORT 
+    reports although only the fiscal quarter end Form N-PORT reports are made available to the public
     
     The compliance timeline for larger fund groups began with quarter ending March 31, 2019 and for smaller fund 
-    groups began with quarter ending March 31, 2020. However, the first 6 months of N-PORT filings were kept private
-    so the first publicly available N-PORT filings begin with quarter ending September 30, 2019. The submission 
+    groups began with quarter ending March 31, 2020. However, the first 6 months of Form N-PORT filings were kept private
+    so the first publicly available Form N-PORT filings begin with quarter ending September 30, 2019. The submission 
     deadlines are 60 days after each fiscal quarter end.
-    
-    ## Why only Form N-PORT?
-    
-    Prior to the Investment Company Reporting Modernization rule, mutual funds were required to submit Form N-Q.
-    There were a number of key changes from the prior Form N-Q to the current Form N-PORT that make the 
-    reported data in Form N-PORT easier to work with including:
-    * Form N-PORT reports are submitted in XML format instead of HTML format
-    * Form N-PORT expands the scope of required level of detail much of which was not previously required with Form N-Q
-    * Form N-PORT are publicly available on a quarterly basis whereas Form N-Q was only required semi-annually
-    
+        
     ## What are Level 3 fair values?
     
     Accounting standards ASC 820 and IFRS 13 establish an authoritative definition of fair value and sets out a 
@@ -158,7 +148,7 @@ layout = html.Div([
     * Level 2: Fair value based on observable inputs either directly or indirectly.
     * Level 3: Fair value based on unobservable inputs.
     
-    There are many readily available sources for Level 1 and Level 2 valuations so this project seeks to focus on only
+    There are many readily available sources for Level 1 and Level 2 valuations so this project is focused solely on 
     Level 3 valuations.
     
     ## Additional Information:
@@ -213,3 +203,12 @@ layout = html.Div([
         nb.gen_bottombar()])
 
     ])
+
+# '''    ## Why only Form N-PORT?
+#
+#     Prior to the Investment Company Reporting Modernization rule, mutual funds were required to submit Form N-Q.
+#     There were a number of key changes from the prior Form N-Q to the current Form N-PORT that make the
+#     reported data in Form N-PORT easier to work with including:
+#     * Form N-PORT reports are submitted in XML format instead of HTML format
+#     * Form N-PORT expands the scope of required level of detail much of which was not previously required with Form N-Q
+#     * Form N-PORT are publicly available on a quarterly basis whereas Form N-Q was only required semi-annually'''
