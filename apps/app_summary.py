@@ -41,6 +41,7 @@ def gen_summary_data():
     # tmptable1 = tmptable1.merge(tmpgrouped, how='left', on='unicorn')
 
     tmptable1 = pd.read_pickle('data/unicorn_summary.pkl')
+    tmptable1['unicornlink'] = '['+tmptable1['unicorn'].astype(str)+'](/apps/app_unicorn#'+tmptable1['unicorn'].str.replace(' ', '_').astype(str)+')'
 
     # tooltipdata=[
     #     {
@@ -57,7 +58,7 @@ def gen_summary_data():
 
 def gen_table_format():
 
-    cols = ['unicorn', 'Country', 'Industry', 'fundManagerunique', 'accessNumcount',
+    cols = ['unicornlink', 'Country', 'Industry', 'fundManagerunique', 'accessNumcount',
             'valDatemin', 'valDatemax',
             'increase', 'flat', 'decrease']
     colheader = ['', '', '', '', '',
@@ -69,7 +70,7 @@ def gen_table_format():
     coltype = ['text', 'text', 'text', 'text', 'numeric',
                'text', 'text',
                'text', 'text', 'text']
-    colpresentation = ['input', 'input', 'input', 'input', 'input',
+    colpresentation = ['markdown', 'input', 'input', 'input', 'input',
                        'input', 'input',
                        'input', 'input', 'input']
 
@@ -105,12 +106,11 @@ layout = html.Div([
                 'textAlign': 'center',
                 'lineHeight': '15px',
                 'font-family': 'sans-serif',
-                'whiteSpace': 'nowrap'
+                'whiteSpace': 'nowrap',
             },
             style_data={
-                # 'whiteSpace': 'nowrap',
                 'height': 'auto',
-                'lineHeight': '15px'
+                'lineHeight': '15px',
             },
             style_cell_conditional=[
                 {'if': {'column_id': c},
@@ -120,6 +120,7 @@ layout = html.Div([
                     'textOverflow': 'ellipsis'}
                 for c in ['fundManagerunique', 'Industry']
             ],
+            style_data_conditional=[{'if': {'column_id': 'unicornlink'}, 'padding-top': 15}],
             # tooltip_data=[
             #     {
             #         column: {'value': str(value), 'type': 'markdown'}

@@ -1,4 +1,6 @@
 # TO DO  add column to exclude certain keywords/phrases
+#TO DO USE UNICORN_SUMMARY to create unicornset throughout project
+#fundmanager - agg - alpahbetical - first sort before agg/groupby and then resort to index
 
 
 # roadmap add annotations for funding round

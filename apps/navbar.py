@@ -13,9 +13,9 @@ def gen_navbar():
             ],
             nav=True,
             in_navbar=True,
-            label='Unicorns',
+            label='Unicorn Data',
         ),
-        dbc.NavItem(dbc.NavLink('Search All', href='/apps/app_search'))
+        dbc.NavItem(dbc.NavLink('Search Data', href='/apps/app_search'))
         ],
         brand="SEC Reported Private Company Valuations",
         brand_style={'font-size': 32},
@@ -23,7 +23,7 @@ def gen_navbar():
         color="primary",
         dark=True,
         sticky='top',
-        style={'font-size': 18}
+        style={'font-size': 20}
     )
 
     return navbar

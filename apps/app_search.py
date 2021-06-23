@@ -124,7 +124,10 @@ layout = html.Div([
             columns=gen_table_format(),
             style_header={'fontWeight': 'bold', 'whiteSpace': 'normal', 'padding-left': '5px', 'padding-right': '5px'},
             style_cell={'textAlign': 'center', 'font-family': 'sans-serif', 'whiteSpace': 'normal'},
+            style_data_conditional=[{'if': {'column_id': 'Fund_xml'}, 'padding-top': 15}],
             sort_action='native',
+            sort_mode='multi',
+            sort_by=[{'column_id': 'valDate', 'direction': 'desc'}, {'column_id': 'fundManager', 'direction': 'asc'}]
         )
     )
 

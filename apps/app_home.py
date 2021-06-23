@@ -126,7 +126,10 @@ layout = html.Div([
     can reference for an indication of what these private company shares are valued at. 
     
     This project is intended to help aggregate and surface Level 3 fair values reported in SEC Form N-PORT filing data 
-    beginning September 30, 2019. 
+    beginning September 30, 2019. This dashboard is organized as follows (also accessible via navigation bar above):
+    * Follow this [link][4] to see a summary of reported fair values for all unicorns
+    * Follow this [link][5] to see the data for individual unicorns
+    * Follow this [link][6] to search all reported Level 3 fair values submitted by mutual funds to the SEC
     
     ## What is Form N-PORT?
     
@@ -159,6 +162,9 @@ layout = html.Div([
     [1]: https://www.sec.gov/divisions/investment/guidance/secg-investment-company-reporting-modernization-rules.htm
     [2]: https://www.sec.gov/rules/final/2016/33-10231.pdf
     [3]: https://www.sec.gov/investment/investment-company-reporting-modernization-faq
+    [4]: /apps/app_summary
+    [5]: /apps/app_unicorn
+    [6]: /apps/app_search
     
                     ''')),
                 ]),

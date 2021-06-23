@@ -5,10 +5,11 @@
 #TO DO add toggle to change size of points on graph
 #TO DO callback to change sec link from html to txt (maybe add hover to explain)
 #TO DO add specific colors per fundmanager
+#TO DO update hash upon name change without triggering circular dependency
 
 
 import dash
-from dash.dependencies import Input, Output
+from dash.dependencies import Input, Output, State
 import dash_core_components as dcc
 import dash_html_components as html
 import dash_table as dt
@@ -72,6 +73,8 @@ layout = html.Div([
     dcc.Store(id='table-memory'),
 
     gen_navbar(),
+
+    dcc.Location(id='url_unicorn', refresh=False),
 
     html.Div([
         html.Label('Company Name'),
@@ -138,7 +141,10 @@ layout = html.Div([
             columns=gen_table_format(),
             style_header={'fontWeight': 'bold', 'whiteSpace': 'normal', 'padding-left': '5px', 'padding-right': '5px'},
             style_cell={'textAlign': 'center', 'font-family': 'sans-serif', 'whiteSpace': 'normal'},
-            sort_action='native',)
+            style_data_conditional=[{'if': {'column_id': 'Fund_xml'}, 'padding-top': 15}],
+            sort_action='native',
+            sort_mode='multi',
+            sort_by=[{'column_id': 'valDate', 'direction': 'desc'}, {'column_id': 'fundManager', 'direction': 'asc'}])
     )
 
 ])
@@ -203,3 +209,23 @@ def filter_table(selectmanager, selectdate, data):
     tmptable = pd.DataFrame.from_dict(data)
     tmptable = tmptable[tmptable['fundManager'].isin(selectmanager) & tmptable['valDate'].isin(selectdate)]
     return tmptable.to_dict('records')
+
+@app.callback(
+    Output(component_id='company-input', component_property='value'),
+    Input(component_id='url_unicorn', component_property='hash'),
+    State(component_id='company-input', component_property='value'),
+)
+def update_url(url_hash, curr_co):
+    hash_name = url_hash[1:].replace('_',' ')
+    test1 = len(hash_name) == 0
+    test2 = hash_name == curr_co
+    test3 = hash_name not in unicornset.values
+    if test1 or test2 or test3:
+        return dash.no_update
+    else:
+        return hash_name
+
+
+
+
+
