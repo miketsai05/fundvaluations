@@ -1,3 +1,8 @@
+# LOADS SEC IDX FILE OF ALL QUARTERLY FILINGS
+# Cadence: Monthly? At least Quarterly
+# Reads in SEC filing idx files
+
+
 import pandas as pd
 import os
 
@@ -19,7 +24,6 @@ def create_dfs(overwrite=False):
 
 def read_idx_files():
 
-    allfilename = 'filings/all_filings.pkl'
     ignorefile = 'filings/ignorelist.csv'
     ignorelist = pd.read_csv(ignorefile)
     urlbegin = 'https://www.sec.gov/Archives/'
@@ -31,32 +35,68 @@ def read_idx_files():
 
     for filename in os.listdir(master_dir):
 
-        if filename not in ignorelist and filename != 'ignorelist.csv':
+        if filename not in list(ignorelist['loadedfiles']) and filename[-3:]=='idx':
 
+            #  Read in idx file
+            print(filename)
             tmp = pd.read_table('filings/'+filename)
             tmp = tmp[6:]
             tmp = tmp.iloc[:, 0].str.split('|', expand=True)
             colmap = {0: 'CIK', 1: 'company_name', 2: 'form_type', 3: 'fileDate', 4: 'filingURL'}
             tmp.rename(columns=colmap, inplace=True)
 
+            # Filter for NPORT filings
+            subtmp = tmp[(tmp['form_type'] == 'NPORT-P') |
+                         (tmp['form_type'] == 'NPORT-P/A') |
+                         (tmp['form_type'] == 'NT NPORT-P')].copy()
+            subtmp['filingURL'] = urlbegin+subtmp['filingURL']
+            master_urls = master_urls.append(subtmp, ignore_index=True)
+
+            # if final file for each quarter, add to ignorelist
+            if len(filename) == 14:
+                ignorelist.loc[len(ignorelist), 'loadedfiles'] = filename
+
+            print('Done loading', filename)
+
+    master_urls.drop_duplicates(inplace=True, ignore_index=True)
+    master_urls.to_pickle(urlfilename)
+    ignorelist.to_csv(ignorefile, index=False)
+
+def gen_allfiles():
+
+    allfilename = 'filings/all_filings.pkl'
+    urlbegin = 'https://www.sec.gov/Archives/'
+
+    master_dir = os.getcwd().replace('\\', '/') + '/filings'
+
+    for filename in os.listdir(master_dir):
+
+        if filename[-3:]=='idx':
+
+            #  Read in idx file
+            print(filename)
+            tmp = pd.read_table('filings/'+filename)
+            tmp = tmp[6:]
+            tmp = tmp.iloc[:, 0].str.split('|', expand=True)
+            colmap = {0: 'CIK', 1: 'company_name', 2: 'form_type', 3: 'fileDate', 4: 'filingURL'}
+            tmp.rename(columns=colmap, inplace=True)
+
+            # if final file for each quarter, append to all_filings and add to ignorelist
             if len(filename) == 14:
                 # master____.idx (i.e. does not have _todate in name)
-                # dont' want to drop duplicates everytime for this database
+                # don't want to drop duplicates everytime for this database
                 all_filings = pd.read_pickle(allfilename)
                 all_filings = all_filings.append(tmp)
                 all_filings.drop_duplicates(inplace=True, ignore_index=True)
                 all_filings.to_pickle(allfilename)
 
-            subtmp = tmp[(tmp['form_type'] == 'NPORT-P') |
-                         (tmp['form_type'] == 'NPORT-P/A') |
-                         (tmp['form_type'] == 'NT NPORT-P')].copy()
-            subtmp['filingURL'] = urlbegin+subtmp['filingURL']
-            # subtmp.drop(columns='company_name', inplace=True)
-            master_urls = master_urls.append(subtmp, ignore_index=True)
             print('Done loading', filename)
 
-            ignorelist.loc[len(ignorelist), 'loadedfiles'] = filename
 
-    master_urls.drop_duplicates(inplace=True, ignore_index=True)
-    master_urls.to_pickle(urlfilename)
-    ignorelist.to_csv(ignorefile)
+
+def main():
+    read_idx_files()
+
+if __name__ == "__main__":
+    main()
+    # get_series_id()

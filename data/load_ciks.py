@@ -1,5 +1,9 @@
 # TO DO finish check_fundManager()
 
+# Cadence: Annually??
+# Reads in SEC Excel file with all mutual fund CIKs
+# Checks latest NCEN for fund family data
+# Checks NPORT for level 3 holdings
 
 # Notes:
 # CIK Number: no leading zeros
@@ -22,7 +26,7 @@ import pyautogui
 def create_dfs(overwrite=False):
 
     cikfilename = 'master_ciks.pkl'
-    cikexcel = 'master_ciks.xlsx'
+    cikexcel = 'master_ciks.xlsx'  # Excel file from SEC
     cik_cols = ['CIK', 'infamily', 'fundfamily', 'ncen_date', 'ncen_url', 'get_urls_date', 'lvl3']
     if ~path.exists(cikfilename) or overwrite:
         master_ciks = pd.read_excel(cikexcel)
@@ -176,48 +180,6 @@ def check_lvl3(subset='nan', check_date=datetime(2020, 12, 31)):
     # separate level 3? all done quarterly? run once through all?
 
 
-# def get_urls(end_date=datetime.today()):
-#     """Loops through each CIK in master_CIKs dataframe and requests all NPORTP urls
-#      from SEC since the get_urls_date. Stores urls in master_urls pkl
-#      [CIK, filing URL, accession number (None), seriesid (None), valDate (None), fileDate(None)]
-#      last 4 items are None until data is pulled from SEC"""
-#
-#     cikfilename = 'master_ciks.pkl'
-#     master_ciks = pd.read_pickle(cikfilename)
-#
-#     urlfilename = 'master_urls.pkl'
-#     master_urls = pd.read_pickle(urlfilename)
-#
-#     new_urls = []
-#
-#     for ind, cik in master_ciks.iloc[1:6].iterrows():
-#     # for ind, cik in master_ciks.iterrows():
-#
-#         not_updated = np.isnan(cik.get_urls_date) or cik.get_urls_date < end_date
-#         if cik.lvl3 and not_updated:
-#
-#             if np.isnan(cik.get_urls_date):
-#                 start_date = datetime(2019,9,30)
-#             else:
-#                 start_date = cik.start_date-relativedelta(months=3)
-#
-#             sec_urls = Filing(cik.CIK,
-#                               filing_type=FilingType.FILING_NPORTP,
-#                               start_date=start_date,
-#                               end_date=end_date).get_urls()
-#
-#             cik_urls = [[cik.CIK, x, None, None, None, None] for x in sec_urls[cik.CIK] if ~master_urls['filingURL'].str.contains(x).any()]
-#             new_urls += cik_urls
-#             if len(cik_urls)>0: # if returned NPORTP filings
-#                 master_ciks.loc[ind, 'get_urls_date'] = end_date
-#
-#     new_urls = pd.DataFrame(new_urls, columns=master_urls.columns)
-#     master_urls = master_urls.append(new_urls, ignore_index=True)
-#
-#     master_urls.to_pickle(urlfilename)
-#     master_ciks.to_pickle(cikfilename)
-#
-#     # return len(new_urls.CIK)
 
 def check_fundManager():
 

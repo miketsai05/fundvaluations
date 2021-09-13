@@ -1,3 +1,4 @@
+#TO DO - ADD AVERAGE PRICE WITHIN QUARTER
 #TO DO show type of investments
 #TO DO trend?? - # marking up, # marking down - sort by biggest options, YoY, QoQ, MoM
 #TO DO valuationdate - make one line
@@ -21,39 +22,13 @@ from app import app
 
 def gen_summary_data():
 
-    # unicornsfilename = 'data/master_unicorns.xlsx'
-    # master_unicorns = pd.read_excel(unicornsfilename)
-    # master_unicorns = master_unicorns.where(pd.notnull(master_unicorns), None)
-    # unicornset = master_unicorns.loc[0:30, 'Company Name']
-    # unicorn_data = pd.read_pickle('data/unicorn_data.pkl')
-    #
-    # tmptable1 = master_unicorns[master_unicorns['Company Name'].isin(unicornset)][['Company Name', 'Country', 'Industry']]
-    # tmptable1.rename(columns={'Company Name': 'unicorn'}, inplace=True)
-    #
-    # f = {'accessNum': 'count', 'fundManager': lambda x: ', '.join(x.astype(str).unique()), 'valDate': ['min', 'max']}
-    # tmpgrouped = unicorn_data.groupby('unicorn', as_index=False).agg(f)
-    # tmpgrouped.columns = ["".join(x) for x in tmpgrouped.columns.ravel()]
-    # tmpgrouped['valDaterange'] = tmpgrouped['valDatemin'].astype(str)+' to ' + tmpgrouped['valDatemax'].astype(str)
-    # # TO DO change this to Mmm YYYY
-    # tmpgrouped.drop(columns=['valDatemin', 'valDatemax'], inplace=True)
-    # tmpgrouped.rename(columns={'fundManager<lambda>': 'fundManagerunique'}, inplace=True)
-    #
-    # tmptable1 = tmptable1.merge(tmpgrouped, how='left', on='unicorn')
 
     tmptable1 = pd.read_pickle('data/unicorn_summary.pkl')
     tmptable1['unicornlink'] = '['+tmptable1['unicorn'].astype(str)+'](/apps/app_unicorn#'+tmptable1['unicorn'].str.replace(' ', '_').astype(str)+')'
 
-    # tooltipdata=[
-    #     {
-    #         column: {'value': str(value), 'type': 'markdown'}
-    #         for column, value in row.items()
-    #     } for row in tmptable1['fundfamilyunique'].to_dict('records')
-    # ],
+    # types of investments, trend, average price within quarter
 
-    # Store this to open
-    # types of investments, trend
-
-    return tmptable1 #, tooltipdata
+    return tmptable1
 
 
 def gen_table_format():
@@ -121,13 +96,6 @@ layout = html.Div([
                 for c in ['fundManagerunique', 'Industry']
             ],
             style_data_conditional=[{'if': {'column_id': 'unicornlink'}, 'padding-top': 15}],
-            # tooltip_data=[
-            #     {
-            #         column: {'value': str(value), 'type': 'markdown'}
-            #         for column, value in row.items()
-            #     } for row in df.to_dict('records')
-            # ],
-            # tooltip_duration=None,
             sort_action='native',
         ),
         style={'padding-top': '20px'}

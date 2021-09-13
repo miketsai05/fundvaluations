@@ -51,13 +51,6 @@ def gen_table_format():
     return dt_cols
 
 
-# external_stylesheets = [dbc.themes.LUMEN] # ['https://codepen.io/chriddyp/pen/bWLwgP.css'] #SPACELAB, FLATLY
-# app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
-
-# app.layout = html.Div([
-
-#add note that only showing level 3 holdings. once public, shares indicaitons no longer presented
-
 layout = html.Div([
 
     dcc.Store(id='table-memory2'),
@@ -133,8 +126,6 @@ layout = html.Div([
 
 ])
 
-
-# add toggle to change size of points on graph
 
 @app.callback(
     Output(component_id='table-memory2', component_property='data'),

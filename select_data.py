@@ -109,7 +109,7 @@ def select_unicorns(mindays=80, maxdays=100, cutoffdate = datetime.date(2020, 12
     Concats all records, merges with URL and CIK data and groups by name, fund manager, valdate and price.
     Saves both selected merged records and grouped data"""
 
-    holdingsfilename = "data/master_holdings.pkl"
+    holdingsfilename = 'data/master_holdings.pkl'
     master_holdings = pd.read_pickle(holdingsfilename)
 
     unicornsfilename = 'data/master_unicorns.xlsx'
