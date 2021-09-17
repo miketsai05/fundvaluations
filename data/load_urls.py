@@ -42,7 +42,7 @@ def read_idx_files():
             tmp = pd.read_table('filings/'+filename)
             tmp = tmp[6:]
             tmp = tmp.iloc[:, 0].str.split('|', expand=True)
-            colmap = {0: 'CIK', 1: 'company_name', 2: 'form_type', 3: 'fileDate', 4: 'filingURL'}
+            colmap = {0: 'CIK Number', 1: 'company_name', 2: 'form_type', 3: 'fileDate', 4: 'filingURL'}
             tmp.rename(columns=colmap, inplace=True)
 
             # Filter for NPORT filings
@@ -61,6 +61,42 @@ def read_idx_files():
     master_urls.drop_duplicates(inplace=True, ignore_index=True)
     master_urls.to_pickle(urlfilename)
     ignorelist.to_csv(ignorefile, index=False)
+
+def gen_ncen():
+#### COMBINE THIS WITH ABOVE!!!!
+    urlbegin = 'https://www.sec.gov/Archives/'
+
+    ncen_filename = 'master_ncens.pkl'
+    master_ncens = pd.read_pickle(ncen_filename)
+
+    master_dir = os.getcwd().replace('\\', '/') + '/filings'
+
+    for filename in os.listdir(master_dir):
+
+        if filename[-3:]=='idx':
+
+            #  Read in idx file
+            print(filename)
+            tmp = pd.read_table('filings/'+filename)
+            tmp = tmp[6:]
+            tmp = tmp.iloc[:, 0].str.split('|', expand=True)
+            colmap = {0: 'CIK', 1: 'company_name', 2: 'form_type', 3: 'fileDate', 4: 'filingURL'}
+            tmp.rename(columns=colmap, inplace=True)
+
+            # Filter for NPORT filings
+            subtmp = tmp[(tmp['form_type'] == 'N-CEN') |
+                        (tmp['form_type'] == 'N-CEN/A') |
+                        (tmp['form_type'] == 'NT N-CEN')|
+                        (tmp['form_type'] == 'NT-NCEN') |
+                        (tmp['form_type'] == 'NT-NCEN/A')].copy()
+            subtmp['filingURL'] = urlbegin+subtmp['filingURL']
+            master_ncens = master_ncens.append(subtmp, ignore_index=True)
+
+            print('Done loading', filename)
+
+    master_ncens.drop_duplicates(inplace=True, ignore_index=True)
+    master_ncens.to_pickle(ncen_filename)
+
 
 def gen_allfiles():
 

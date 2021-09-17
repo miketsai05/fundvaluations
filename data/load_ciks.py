@@ -27,7 +27,7 @@ def create_dfs(overwrite=False):
 
     cikfilename = 'master_ciks.pkl'
     cikexcel = 'master_ciks.xlsx'  # Excel file from SEC
-    cik_cols = ['CIK', 'infamily', 'fundfamily', 'ncen_date', 'ncen_url', 'get_urls_date', 'lvl3']
+    cik_cols = ['CIK', 'infamily', 'fundfamily', 'ncen_date', 'ncen_url', 'new_ncen', 'lvl3']
     if ~path.exists(cikfilename) or overwrite:
         master_ciks = pd.read_excel(cikexcel)
         master_ciks = master_ciks.reindex( columns=master_ciks.columns.tolist()+cik_cols)
@@ -45,7 +45,7 @@ def create_dfs(overwrite=False):
 
 
 def get_ncen_data(data1):
-
+    # Given data from
     fam = np.nan
     filedate = get_line(data1, 'FILED AS OF DATE:')
     tmpfam = get_line(data1, 'isRegistrantFamilyInvComp')
@@ -60,7 +60,7 @@ def get_ncen_data(data1):
     return filedate, infam, fam
 
 
-def check_ncen(subset='nan'):
+def check_ncen():
     # loop through CIK, pull latest N-CEN FORM. check for fund family
     # check annually when SEC releases mutual fund file
     # need to loop until no errors - all mutual funds should have ncen
@@ -69,53 +69,63 @@ def check_ncen(subset='nan'):
 
     cikfilename = 'master_ciks.pkl'
     master_ciks = pd.read_pickle(cikfilename)
+    master_ciks['ncen_date'] = pd.to_datetime(master_ciks['ncen_date'])
+    keepcols = master_ciks.columns
 
-    if subset=='all':
-        cikstopull = list(master_ciks['CIK Number'].astype(str))
-        rowidx = cikstopull.index
-        cikstopull = list(cikstopull.astype(str))
-    elif subset=='nan':
-        cikstopull = master_ciks[master_ciks['ncen_date']!=master_ciks['ncen_date']]['CIK Number']
-        rowidx = cikstopull.index
-        cikstopull = list(cikstopull.astype(str))
+    ncenfilename = 'master_ncens.pkl'
+    master_ncens = pd.read_pickle(ncenfilename)
+    master_ncens['fileDate'] = pd.to_datetime(master_ncens['fileDate'])
+    latest_ncens = master_ncens.loc[master_ncens.reset_index().groupby('CIK')['fileDate'].idxmax()]
 
-    batch = 5
-    numcik = len(cikstopull)
+    cols_rename = {'CIK':'CIK Number', 'fileDate':'ncen_date', 'filingURL':'ncen_url'}
+    latest_ncens.rename(columns=cols_rename, inplace=True)
+
+    master_ciks = master_ciks.merge(latest_ncens, how='left', on='CIK Number', suffixes=('','_y'))
+    ind1 = (master_ciks['ncen_date'] != master_ciks['ncen_date']) & (master_ciks['ncen_date_y'] == master_ciks['ncen_date_y'])
+    ind2 = master_ciks['ncen_date_y'] > master_ciks['ncen_date']
+    replace_ind =  ind1 | ind2
+    master_ciks.loc[replace_ind, 'ncen_date'] = master_ciks.loc[replace_ind, 'ncen_date_y']
+    master_ciks.loc[replace_ind, 'ncen_url'] = master_ciks.loc[replace_ind, 'ncen_url_y']
+    master_ciks.loc[replace_ind, 'new_ncen'] = replace_ind[replace_ind]
+
+    master_ciks = master_ciks[keepcols]
 
     s = requests.Session()
     s.headers.update({'User-Agent': 'Mozilla/5.0'})
 
-    for i in range(math.ceil(numcik/batch)):
+    numcik = 0
 
-        cikset = cikstopull[i*batch: min(numcik, (i+1)*batch)]
-        rowset = rowidx[i*batch: min(numcik, (i+1)*batch)]
+    for index, row in master_ciks.iterrows():
 
-        ncen_urls = Filing(cikset,
-                           filing_type=FilingType.FILING_NCEN,
-                           start_date=datetime(2019,1,1),
-                           end_date=datetime.today(),
-                           count=1).get_urls()
-
-        for cik, row in zip(cikset, rowset):
-            if len(ncen_urls[cik]) > 0:
-                url = ncen_urls[cik][0]
+        if row['new_ncen']:
+            url = row['ncen_url']
+            if url == url:
                 data1 = s.get(url).text
                 filedate, infam, fam = get_ncen_data(data1)
-                master_ciks.loc[row, ['infamily', 'fundfamily', 'ncen_date', 'ncen_url']] = infam, fam, filedate, url
-                time.sleep(0.15)
+                master_ciks.loc[index, ['infamily', 'fundfamily', 'new_ncen']] = infam, fam, False
+                numcik += 1
+                time.sleep(0.2)
 
-        time.sleep(1)
+        if numcik % 50 == 0:
+            print('Currently on ', index, ' of ', len(master_ciks))  # comment out
+            pyautogui.press('volumedown')
+            time.sleep(0.5)
+            pyautogui.press('volumeup')
+
+        if numcik % 500 == 0:
+            master_ciks.to_pickle(cikfilename)
 
     master_ciks.to_pickle(cikfilename)
-
     toc = time.time()
-
-    num_nan_end = len(master_ciks[master_ciks['ncen_date']!=master_ciks['ncen_date']]['CIK Number'])
-    print('Looped through', numcik, 'CIKs in', toc-tic, 'secs. Number of nan entries remaining for NCEN data: ', num_nan_end)
-    return numcik-num_nan_end
+    print('Looped through', numcik, 'CIKs in', toc-tic, 'secs.')
 
 
-def check_lvl3(subset='nan', check_date=datetime(2020, 12, 31)):
+def check_lvl3(check_date=datetime(2020, 12, 31), date_delta=3, check='nan'):
+    ###
+    # Inputs:
+        # check_date: beginning of date range to filter by filing date
+        # date_delta: range of dates to filter by filing date
+        # check: if 'nan' - only checks 'nan' entries in lvl3 column, else checks both nan or False
 
     # get all nport filings for 12/31/2020 date - check level 3 there.
     tic = time.time()
@@ -123,62 +133,56 @@ def check_lvl3(subset='nan', check_date=datetime(2020, 12, 31)):
     cikfilename = 'master_ciks.pkl'
     master_ciks = pd.read_pickle(cikfilename)
 
-    if subset == 'all':
-        cikstopull = master_ciks[master_ciks['lvl3']!=True]['CIK Number']
-        rowidx = cikstopull.index
-        cikstopull = list(cikstopull.astype(str))
-    elif subset == 'nan':
-        cikstopull = master_ciks[master_ciks['lvl3']!=master_ciks['lvl3']]['CIK Number']
-        rowidx = cikstopull.index
-        cikstopull = list(cikstopull.astype(str))
+    urlfilename = 'master_urls.pkl'
+    master_urls = pd.read_pickle(urlfilename)
+    master_urls['fileDate'] = pd.to_datetime(master_urls['fileDate'])
 
-    batch = 5
-    numcik = len(cikstopull)
+    ind = (master_urls['fileDate'] > check_date) & (master_urls['fileDate'] <= (check_date+relativedelta(months=date_delta)))
+    urlset = master_urls.loc[ind]
 
     s = requests.Session()
     s.headers.update({'User-Agent': 'Mozilla/5.0'})
 
-    print('Looping through CIKs - ' + str(numcik))
+    numcik = 0
 
-    for i in range(math.ceil(numcik/batch)):
+    for index, row in master_ciks.iterrows():
 
-        if i % 10 == 0:
-            print(i*5)  # comment out
+        if check == 'nan':
+            proceed_check = row['lvl3'] != row['lvl3']
+        else:
+            proceed_check = (row['lvl3'] != row['lvl3']) or (row['lvl3'] is False)
+
+        if proceed_check:
+
+            currCIK = row['CIK Number']
+            nport_urls = list(urlset[urlset['CIK Number'] == currCIK]['filingURL'])
+
+            print(currCIK, len(nport_urls))
+
+            if len(nport_urls) > 0:
+                lvl3 = False
+                for url in nport_urls:
+                    lvl3 = lvl3 or s.get(url).text.find('<fairValLevel>3</fairValLevel>') > 0
+                    time.sleep(0.2)
+                master_ciks.loc[index, 'lvl3'] = lvl3  # has lvl3 = true, does not have lvl3 = false, no nport = nan
+                numcik += 1
+
+        if (numcik>0) & (numcik % 50 == 0):
+            print('Currently on ', index, ' of ', len(master_ciks), '. Pulled ', numcik, ' so far')  # comment out
             pyautogui.press('volumedown')
             time.sleep(0.5)
             pyautogui.press('volumeup')
 
-        if i % 100 == 0:
+        if numcik % 500 == 0:
             master_ciks.to_pickle(cikfilename)
-
-        cikset = cikstopull[i*batch: min(numcik, (i+1)*batch)]
-        rowset = rowidx[i*batch: min(numcik, (i+1)*batch)]
-
-        nport_urls = Filing(cikset,
-            filing_type=FilingType.FILING_NPORTP,
-            start_date=check_date,
-            end_date=check_date+relativedelta(months=4)).get_urls() #need to check all nportp filings for each cik
-
-        for cik, row in zip(cikset, rowset):
-            lvl3 = False
-            if len(nport_urls[cik]) > 0:
-                for url in nport_urls[cik]:
-                    lvl3 = lvl3 or s.get(url).text.find('<fairValLevel>3</fairValLevel>') > 0
-                    time.sleep(0.1)
-                master_ciks.loc[row, 'lvl3'] = lvl3  # has lvl3 = true, does not have lvl3 = false, no nport = nan
-
-        time.sleep(0.5)
 
     master_ciks.to_pickle(cikfilename)
 
     toc = time.time()
 
-    num_nan_end = len(master_ciks[master_ciks['lvl3']!=master_ciks['lvl3']]['CIK Number'])
-    print('Looped through', numcik, 'CIKs in', toc-tic, 'secs. Number of nan entries remaining for lvl3: ', num_nan_end)
-    return numcik-num_nan_end
+    print('Looped through', numcik, 'CIKs in', toc-tic, 'secs')
     # only overwrite if not NAN!! - OK, only testing where lvl3=False
     # separate level 3? all done quarterly? run once through all?
-
 
 
 def check_fundManager():
@@ -189,7 +193,7 @@ def check_fundManager():
     # MASTER HOLDINGS DATE --> MERGE
     # SELECT ROWS WHERE fundManager == nan
 
-def map_fundManager():
+def map_fundManager(tmpoverride=True):
 
     cikfilename = 'master_ciks.pkl'
     master_ciks = pd.read_pickle(cikfilename)
@@ -201,38 +205,102 @@ def map_fundManager():
     master_ciks.loc[famind, 'fundManager_raw'] = master_ciks.loc[famind, 'fundfamily']
     master_ciks.loc[~famind, 'fundManager_raw'] = master_ciks.loc[~famind, 'Entity Name']
 
-    fund_map = pd.read_excel('data/master_funds.xlsx', sheet_name='allfund_map')
+    fund_map = pd.read_excel('master_funds.xlsx', sheet_name='allfund_map')
     fund_map.set_index('fundManager_raw', inplace=True)
 
     master_ciks['fundManager'] = master_ciks['fundManager_raw'].map(fund_map.squeeze())
+
+    tmpind = master_ciks['fundManager'] != master_ciks['fundManager']
+    if tmpoverride:
+        master_ciks.loc[tmpind, 'fundManager'] = master_ciks.loc[tmpind, 'Entity Name']
+    else:
+        master_ciks[tmpind]['fundManager_raw'].value_counts().to_clipboard()
+        print('test')
 
     master_ciks.to_pickle(cikfilename)
 
 
 def main():
 
-    # load_new = 0
-    # if load_new:
-    #     load_ciks()
-
     if False:
         print('Looping through NCENs')
-        ncen_nan_reduced = check_ncen()
-        while ncen_nan_reduced > 0:
-            ncen_nan_reduced = check_ncen()
+        check_ncen()
 
     if False:
+        check_date = datetime(2019, 9, 30)
+        date_delta = 3
+        check = 'nan'
         print('Looping through CIKs to check for Level 3')
-        lvl3_nan_reduced = check_lvl3()
-        while lvl3_nan_reduced > 0:
-            lvl3_nan_reduced = check_lvl3()
+        check_lvl3(check_date=check_date, date_delta=date_delta, check=check)
 
-
-
-    # end_date = datetime.today()
-    #
-    # get_urls(end_date)
+    if True:
+        tmpoverride=True
+        map_fundManager(tmpoverride=tmpoverride)
 
 
 if __name__ == "__main__":
     main()
+
+
+
+
+
+
+
+
+
+
+# def check_ncen(subset='nan'):
+#     # loop through CIK, pull latest N-CEN FORM. check for fund family
+#     # check annually when SEC releases mutual fund file
+#     # need to loop until no errors - all mutual funds should have ncen
+#
+#     tic = time.time()
+#
+#     cikfilename = 'master_ciks.pkl'
+#     master_ciks = pd.read_pickle(cikfilename)
+#
+#     if subset=='all':
+#         cikstopull = list(master_ciks['CIK Number'].astype(str))
+#         rowidx = cikstopull.index
+#         cikstopull = list(cikstopull.astype(str))
+#     elif subset=='nan':
+#         cikstopull = master_ciks[master_ciks['ncen_date']!=master_ciks['ncen_date']]['CIK Number']
+#         rowidx = cikstopull.index
+#         cikstopull = list(cikstopull.astype(str))
+#
+#     batch = 5
+#     numcik = len(cikstopull)
+#
+#     s = requests.Session()
+#     s.headers.update({'User-Agent': 'Mozilla/5.0'})
+#
+#     for i in range(math.ceil(numcik/batch)):
+#
+#         cikset = cikstopull[i*batch: min(numcik, (i+1)*batch)]
+#         rowset = rowidx[i*batch: min(numcik, (i+1)*batch)]
+#
+#         print(cikset)
+#         ncen_urls = Filing(cikset,
+#                            filing_type=FilingType.FILING_NCEN,
+#                            start_date=datetime(2019,1,1),
+#                            end_date=datetime.today(),
+#                            count=1).get_urls()
+#
+#         for cik, row in zip(cikset, rowset):
+#             if len(ncen_urls[cik]) > 0:
+#                 url = ncen_urls[cik][0]
+#                 data1 = s.get(url).text
+#                 filedate, infam, fam = get_ncen_data(data1)
+#                 master_ciks.loc[row, ['infamily', 'fundfamily', 'ncen_date', 'ncen_url']] = infam, fam, filedate, url
+#                 time.sleep(0.15)
+#
+#         time.sleep(1)
+#
+#     master_ciks.to_pickle(cikfilename)
+#
+#     toc = time.time()
+#
+#     num_nan_end = len(master_ciks[master_ciks['ncen_date']!=master_ciks['ncen_date']]['CIK Number'])
+#     print('Looped through', numcik, 'CIKs in', toc-tic, 'secs. Number of nan entries remaining for NCEN data: ', num_nan_end)
+#     return numcik-num_nan_end

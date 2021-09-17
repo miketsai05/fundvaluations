@@ -132,10 +132,11 @@ def main():
     s.headers.update({'User-Agent': 'Mozilla/5.0'})
 
     print('Number of unaccessed urls', len(master_urls[master_urls['accessNum']!=master_urls['accessNum']]))
+    prior_CIK = ''
 
     for ind in master_urls.index:
 
-        if ind % 100 == 0:
+        if ind % 500 == 0:
             print(ind)  # comment out
             pyautogui.press('volumedown')
             time.sleep(0.5)
@@ -147,11 +148,11 @@ def main():
 
         curr_accessNum = master_urls.loc[ind, 'accessNum']
         curr_CIK = master_urls.loc[ind,'CIK Number']
-        CIKinpkl = len(master_ciks[master_ciks['CIK Number'] == int(curr_CIK)]['lvl3']) > 0
+        CIKinpkl = len(master_ciks[master_ciks['CIK Number'] == curr_CIK]['lvl3']) > 0
 
         if CIKinpkl and curr_CIK not in ['277751', '906185']:
 
-            if curr_accessNum!=curr_accessNum and (master_ciks[master_ciks['CIK Number'] == int(curr_CIK)]['lvl3'].item() is True):
+            if curr_accessNum != curr_accessNum and (master_ciks[master_ciks['CIK Number'] == curr_CIK]['lvl3'].item() is True):
 
                 print(ind)
 
@@ -170,7 +171,9 @@ def main():
 
                 time.sleep(0.15)  #SEC rate limit 10 requests / sec - slight buffer to be safe here
         else:
-            print(curr_CIK,'not in pkl file')
+            if prior_CIK != curr_CIK:
+                print(curr_CIK,'not in pkl file')
+                prior_CIK = curr_CIK
 
     master_urls.to_pickle(urlfilename)
     master_holdings.to_pickle(holdingsfilename)

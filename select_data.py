@@ -14,7 +14,8 @@ import datetime
 
 
 def search_select(search_name):
-    """ Looks up relevant records from master_holdings.pkl given search term returns a copy of the data"""
+    """ Looks up relevant records from master_holdings.pkl given search term returns a copy of the data
+        Used for app_search"""
 
     # Should I pass in master_holdings as a dataframe rather than open each time?? TBD
 
@@ -104,10 +105,14 @@ def search_unicorns(master_holdings, co_name, aka, legal_name, exclude, search_l
 
 #begindate, enddate, num=1
 
-def select_unicorns(mindays=80, maxdays=100, cutoffdate = datetime.date(2020, 12, 31)):
+def select_unicorns(mindays=80, maxdays=100, cutoffdate = datetime.date(2021, 3, 31)):
     """ Loops through unicorns in master_unicorns.xlsx - searches for records.
     Concats all records, merges with URL and CIK data and groups by name, fund manager, valdate and price.
-    Saves both selected merged records and grouped data"""
+    Saves both selected merged records and grouped data
+    Inputs:
+        mindays = minimum lookback period to calc QoQ change
+        maxdays = maximum lookback period to calc QoQ change
+        cutoffdate = earliest valuation date to consider for most recent quarter change columns"""
 
     holdingsfilename = 'data/master_holdings.pkl'
     master_holdings = pd.read_pickle(holdingsfilename)
@@ -177,7 +182,7 @@ def select_unicorns(mindays=80, maxdays=100, cutoffdate = datetime.date(2020, 12
     unicorn_summary.to_pickle('data/unicorn_summary.pkl')
 
 
-def map_diff( unicorn_subset , mindays, maxdays, cutoffdate):
+def map_diff(unicorn_subset, mindays, maxdays, cutoffdate):
 
     mindays = datetime.timedelta(days=mindays)
     maxdays = datetime.timedelta(days=maxdays)
@@ -234,9 +239,16 @@ def map_diff( unicorn_subset , mindays, maxdays, cutoffdate):
 
 
 if __name__ == "__main__":
-    select_unicorns()
+
+    mindays = 80
+    maxdays = 100
+    cutoffdate = datetime.date(2021, 3, 31)
+
+    select_unicorns(mindays=mindays, maxdays=maxdays, cutoffdate=cutoffdate)
+
     unicorn_data = pd.read_pickle('data/unicorn_data.pkl')
     unicorn_data_grouped = pd.read_pickle('data/unicorn_data_grouped.pkl')
     unicorn_summary = pd.read_pickle('data/unicorn_summary.pkl')
+
     # fundManager_unique = sorted(set(unicorn_data['fundManager_raw']))
 

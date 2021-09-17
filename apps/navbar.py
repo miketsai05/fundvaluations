@@ -31,13 +31,14 @@ def gen_navbar():
 
 def gen_bottombar():
 
-    footnote1 = 'Data is automatically aggregated and provided “as is” without any representations or warranties, express or implied.'
+    footnote1 = 'Data automatically aggregated and provided “as is” without any representations or warranties, express or implied.'
     footnote2 = 'Not affiliated with the U.S. S.E.C. or EDGAR System.'
+    footnote3 = 'Data last updated as of September 13, 2021.'
 
     bbar = html.Div(
         [
             html.Hr(),
-            html.P([footnote1, html.Br(), footnote2]),
+            html.P([footnote1, html.Br(), footnote2, html.Br(), footnote3]),
         ]
     )
 

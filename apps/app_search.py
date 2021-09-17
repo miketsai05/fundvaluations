@@ -141,7 +141,7 @@ layout = html.Div([
 def update_graph(n_clicks, n_submit, input_value):
     if input_value is None:
         raise dash.exceptions.PreventUpdate
-    if len(input_value) <= 3:
+    if len(input_value) < 3:
         return dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update, 'Please enter at least 3 characters'
     else:
         tmptable = gen_table(input_value)

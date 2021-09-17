@@ -97,6 +97,7 @@ layout = html.Div([
             ],
             style_data_conditional=[{'if': {'column_id': 'unicornlink'}, 'padding-top': 15}],
             sort_action='native',
+            markdown_options={'link_target': '_self'}
         ),
         style={'padding-top': '20px'}
     ),
