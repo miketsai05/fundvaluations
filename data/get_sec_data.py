@@ -1,7 +1,7 @@
 # LOOP THROUGH EACH URL AND EXTRACT LVL3 INVESTMENT DATA
 # Cadence: run with load_urls is run
 
-# check not in cik.pkl CIKs
+# TO DO - check CIKs not in cik.pkl CIKs
 
 import pandas as pd
 import xml.etree.ElementTree as ET
