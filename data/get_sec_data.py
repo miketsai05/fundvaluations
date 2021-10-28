@@ -1,13 +1,23 @@
-# LOOP THROUGH EACH URL AND EXTRACT LVL3 INVESTMENT DATA
+""" Scripts to run program related to extracting SEC data from filings
 # Cadence: run with load_urls is run
+# LOOP THROUGH EACH URL AND EXTRACT LVL3 INVESTMENT DATA
+
+get_line(data1, label_str):
+get_section(data1, tag):
+xml2list(data2, df_cols, twolevel_cols):
+get_data(data1, df_cols, twolevel_cols, lvl3only=True):
+main():
 
 # TO DO - check CIKs not in cik.pkl CIKs
+
+"""
+
+from os import path
+import time
 
 import pandas as pd
 import xml.etree.ElementTree as ET
 import requests
-from os import path
-import time
 import pyautogui
 
 

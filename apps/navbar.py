@@ -4,18 +4,20 @@ import dash_html_components as html
 def gen_navbar():
 
     navbar = dbc.NavbarSimple([
-        dbc.NavItem(dbc.NavLink("Home", href='/apps/app_home')),
+        dbc.NavItem(dbc.NavLink("Summary", href='/apps/app_summary')),
+        dbc.NavItem(dbc.NavLink("Company View", href='/apps/app_unicorn')),
         # dbc.NavItem(dbc.NavLink("Funds", href='/apps/app_fund')),
-        dbc.DropdownMenu(
-            children=[
-                dbc.DropdownMenuItem("Summary View", href='/apps/app_summary'),
-                dbc.DropdownMenuItem("Individual View", href='/apps/app_unicorn'),
-            ],
-            nav=True,
-            in_navbar=True,
-            label='Unicorn Data',
-        ),
-        dbc.NavItem(dbc.NavLink('Search Data', href='/apps/app_search'))
+        # dbc.DropdownMenu(
+        #     children=[
+        #         dbc.DropdownMenuItem("Summary View", href='/apps/app_summary'),
+        #         dbc.DropdownMenuItem("Individual View", href='/apps/app_unicorn'),
+        #     ],
+        #     nav=True,
+        #     in_navbar=True,
+        #     label='Unicorn Data',
+        # ),
+        dbc.NavItem(dbc.NavLink('Search Data', href='/apps/app_search')),
+        dbc.NavItem(dbc.NavLink('About', href='/apps/app_about')),
         ],
         brand="SEC Reported Private Company Valuations",
         brand_style={'font-size': 32},

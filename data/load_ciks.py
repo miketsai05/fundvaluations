@@ -1,26 +1,40 @@
-# TO DO finish check_fundManager()
-
+""" Scripts to run program related to CIK level data
 # Cadence: Annually??
 # Reads in SEC Excel file with all mutual fund CIKs
 # Checks latest NCEN for fund family data
 # Checks NPORT for level 3 holdings
 
+check_ncen():
+    - loops through latest NCEN, extract fund family data
+
+check_lvl3():
+    - loops through specific NPORT filing, checks for level 3 holdings
+
+map_fundManager(tmpoverride=True):
+    - maps fund families from master_funds.xlsx
+    - copies unknown fund family to clipboard
+
 # Notes:
 # CIK Number: no leading zeros
 # CIK: 10 digits - include leading zeros
 
-import pandas as pd
-import numpy as np
-import math
+# TO DO finish check_fundManager()
 
-from secedgar.filings import Filing, FilingType
+"""
+
+
 from os import path
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 import time
-from data.get_sec_data import get_line
+
+import pandas as pd
+import numpy as np
 import requests
 import pyautogui
+
+from data.get_sec_data import get_line
+
 
 
 def create_dfs(overwrite=False):
@@ -45,7 +59,12 @@ def create_dfs(overwrite=False):
 
 
 def get_ncen_data(data1):
-    # Given data from
+    """ Given text data from NCEN filing, returns 3 outputs related to fund family data
+            - filing date
+            - in family: Y/N
+            - fund family
+    """
+
     fam = np.nan
     filedate = get_line(data1, 'FILED AS OF DATE:')
     tmpfam = get_line(data1, 'isRegistrantFamilyInvComp')
@@ -121,13 +140,15 @@ def check_ncen():
 
 
 def check_lvl3(check_date=datetime(2020, 12, 31), date_delta=3, check='nan'):
-    ###
+    """
     # Inputs:
         # check_date: beginning of date range to filter by filing date
         # date_delta: range of dates to filter by filing date
         # check: if 'nan' - only checks 'nan' entries in lvl3 column, else checks both nan or False
 
     # get all nport filings for 12/31/2020 date - check level 3 there.
+    """
+
     tic = time.time()
 
     cikfilename = 'master_ciks.pkl'

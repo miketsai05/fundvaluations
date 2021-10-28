@@ -1,11 +1,22 @@
-# LOADS SEC IDX FILE OF ALL QUARTERLY FILINGS
+""" Scripts to run program related to filing url data
 # Cadence: Monthly? At least Quarterly
+# LOADS SEC IDX FILE OF ALL QUARTERLY FILINGS
 # Reads in SEC filing idx files
 
+read_idx_files():
+    - opens new idx files and adds NPORT filing urls to master_urls.pkl
+gen_ncen():
+    - opens all idx files and adds all NCEN filings urls to master_ncens.pkl
+gen_allfiles():
+    - opens lal idx files and adds all filing urls to all_filings.pkl
 
-import pandas as pd
+# TO DO Combine gen_ncen with read_idx_files into one script
+
+"""
+
+
 import os
-
+import pandas as pd
 
 def create_dfs(overwrite=False):
 
@@ -63,7 +74,7 @@ def read_idx_files():
     ignorelist.to_csv(ignorefile, index=False)
 
 def gen_ncen():
-#### COMBINE THIS WITH ABOVE!!!!
+
     urlbegin = 'https://www.sec.gov/Archives/'
 
     ncen_filename = 'master_ncens.pkl'
