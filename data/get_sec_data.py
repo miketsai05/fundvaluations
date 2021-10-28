@@ -1,5 +1,5 @@
 """ Scripts to run program related to extracting SEC data from filings
-# Cadence: run with load_urls is run
+# Cadence: run whenever load_urls is run
 # LOOP THROUGH EACH URL AND EXTRACT LVL3 INVESTMENT DATA
 
 get_line(data1, label_str):

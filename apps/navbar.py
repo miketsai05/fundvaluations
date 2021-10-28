@@ -5,7 +5,7 @@ def gen_navbar():
 
     navbar = dbc.NavbarSimple([
         dbc.NavItem(dbc.NavLink("Summary", href='/apps/app_summary')),
-        dbc.NavItem(dbc.NavLink("Company View", href='/apps/app_unicorn')),
+        dbc.NavItem(dbc.NavLink("Company View", href='/apps/app_company')),
         # dbc.NavItem(dbc.NavLink("Funds", href='/apps/app_fund')),
         # dbc.DropdownMenu(
         #     children=[

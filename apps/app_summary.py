@@ -15,8 +15,8 @@ from dash_table import FormatTemplate
 from dash_table.Format import Format, Scheme
 import dash_bootstrap_components as dbc
 import pandas as pd
-import apps.navbar as nb
 
+import apps.navbar as nb
 from app import app
 
 
@@ -24,7 +24,7 @@ def gen_summary_data():
 
 
     tmptable1 = pd.read_pickle('data/unicorn_summary.pkl')
-    tmptable1['unicornlink'] = '['+tmptable1['unicorn'].astype(str)+'](/apps/app_unicorn#'+tmptable1['unicorn'].str.replace(' ', '_').astype(str)+')'
+    tmptable1['unicornlink'] = '['+tmptable1['unicorn'].astype(str)+'](/apps/app_company#'+tmptable1['unicorn'].str.replace(' ', '_').astype(str)+')'
 
     # types of investments, trend, average price within quarter
 
@@ -33,28 +33,35 @@ def gen_summary_data():
 
 def gen_table_format():
 
-    cols = ['unicornlink', 'Country', 'Industry', 'fundManagerunique', 'accessNumcount',
-            'valDatemin', 'valDatemax',
-            'increase', 'flat', 'decrease']
-    colheader = ['', '', '', '', '',
-                 'Valuation Dates Available', 'Valuation Dates Available',
-                 'Most Recent Quarter Valuation Changes', 'Most Recent Quarter Valuation Changes', 'Most Recent Quarter Valuation Changes' ]
-    colnames = ['Company', 'Country', 'Industry', 'Fund Managers', 'Total Filings',
-                'From', 'To',
-                'Increased', 'Flat', 'Decreased']
-    coltype = ['text', 'text', 'text', 'text', 'numeric',
-               'text', 'text',
-               'text', 'text', 'text']
-    colpresentation = ['markdown', 'input', 'input', 'input', 'input',
-                       'input', 'input',
-                       'input', 'input', 'input']
+    cols = ['unicornlink', 'fundManagerunique',
+            'persharemean', 'persharerange', 'QoQpercentdiffmean',
+            'increase', 'decrease',  'quarterfilingcount',
+            'valDatemin', 'valDatemax']
+    colheader = ['', '',
+                 'Most Recent Quarter Valuations (Per Share)', 'Most Recent Quarter Valuations (Per Share)', 'Most Recent Quarter Valuations (Per Share)',
+                 'Most Recent Quarter Valuations (Per Share)', 'Most Recent Quarter Valuations (Per Share)', 'Most Recent Quarter Valuations (Per Share)',
+                 'Valuation Dates Available', 'Valuation Dates Available']
+    colnames = ['Company', 'Mutual Fund Investors',
+                'Average Price', 'Price Range', '% Change (Average)',
+                'Increases', 'Decreases', 'Filings',
+                'From', 'To']
+    coltype = ['text', 'text',
+               'numeric', 'text', 'numeric',
+               'text', 'text', 'text',
+               'text', 'text']
+    colpresentation = ['markdown', 'input',
+                       'input', 'input', 'input',
+                       'input', 'input', 'input',
+                       'input', 'input']
 
     dt_cols = [{'name': [w, x], 'id': y, 'type': z, 'presentation': a} for w, x, y, z, a in
                zip(colheader, colnames, cols, coltype, colpresentation)]
 
-    numformat = Format(precision=0, scheme=Scheme.fixed).group(True)
-
-    dt_cols[3]['format'] = numformat
+    # countformat = Format(precision=0, scheme=Scheme.fixed).group(True)
+    #
+    # dt_cols[3]['format'] = countformat
+    dt_cols[2]['format'] = FormatTemplate.money(2)
+    dt_cols[4]['format'] = FormatTemplate.percentage(1)
 
     return dt_cols
 
@@ -68,14 +75,14 @@ layout = html.Div([
         dt.DataTable(
             id='table1',
             data = gen_summary_data().to_dict('records'),
-            # data = tmptable1.to_dict('records'),
             columns=gen_table_format(),
             merge_duplicate_headers=True,
             style_header={
                 'fontWeight': 'bold',
                 'whiteSpace': 'normal',
                 'padding-left': '5px',
-                'padding-right': '5px'
+                'padding-right': '5px',
+                'textAlign': 'center'
             },
             style_cell={
                 'textAlign': 'center',
@@ -87,15 +94,35 @@ layout = html.Div([
                 'height': 'auto',
                 'lineHeight': '15px',
             },
+            style_header_conditional=[
+                {'if': {'column_id': c},
+                    'textAlign': 'left'}
+                for c in ['unicornlink', 'fundManagerunique']
+            ],
             style_cell_conditional=[
                 {'if': {'column_id': c},
-                    'height': 'auto',
                     'whiteSpace': 'normal',
-                    'overflow': 'hidden',
-                    'textOverflow': 'ellipsis'}
-                for c in ['fundManagerunique', 'Industry']
+                    'textAlign': 'left'}
+                    # 'line-height': '15px',
+                    # 'max-height': '30px',
+                    # 'min-height': '30px',
+                    # 'height': '30px',
+                    # 'overflow-y': 'hidden',
+                    # 'display': 'block'}
+                for c in ['fundManagerunique']
             ],
             style_data_conditional=[{'if': {'column_id': 'unicornlink'}, 'padding-top': 15}],
+            tooltip_data=[{'fundManagerunique': x} for x in gen_summary_data()['fundManagerunique']],
+            tooltip_duration=None,
+            css=[{
+                'selector': '.dash-spreadsheet td div',
+                'rule': '''
+                            line-height: 15px;
+                            max-height: 30px; min-height: 30px; height: 30px;
+                            display: block;
+                            overflow-y: hidden;
+                        '''
+            }],
             sort_action='native',
             markdown_options={'link_target': '_self'}
         ),
