@@ -35,7 +35,7 @@ def gen_bottombar():
 
     footnote1 = 'Data automatically aggregated and provided “as is” without any representations or warranties, express or implied.'
     footnote2 = 'Not affiliated with the U.S. S.E.C. or EDGAR System.'
-    footnote3 = 'Last updated as of September 13, 2021.'
+    footnote3 = 'Last updated as of October 28, 2021.'
 
     bbar = html.Div(
         [

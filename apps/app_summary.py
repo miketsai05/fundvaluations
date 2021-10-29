@@ -84,33 +84,27 @@ layout = html.Div([
                 'padding-right': '5px',
                 'textAlign': 'center'
             },
+            style_header_conditional=[
+                {'if': {'column_id': c},
+                 'textAlign': 'left'}
+                for c in ['unicornlink', 'fundManagerunique']
+            ],
             style_cell={
                 'textAlign': 'center',
                 'lineHeight': '15px',
                 'font-family': 'sans-serif',
                 'whiteSpace': 'nowrap',
             },
-            style_data={
-                'height': 'auto',
-                'lineHeight': '15px',
-            },
-            style_header_conditional=[
-                {'if': {'column_id': c},
-                    'textAlign': 'left'}
-                for c in ['unicornlink', 'fundManagerunique']
-            ],
             style_cell_conditional=[
                 {'if': {'column_id': c},
                     'whiteSpace': 'normal',
                     'textAlign': 'left'}
-                    # 'line-height': '15px',
-                    # 'max-height': '30px',
-                    # 'min-height': '30px',
-                    # 'height': '30px',
-                    # 'overflow-y': 'hidden',
-                    # 'display': 'block'}
                 for c in ['fundManagerunique']
             ],
+            style_data={
+                'height': 'auto',
+                'lineHeight': '15px',
+            },
             style_data_conditional=[{'if': {'column_id': 'unicornlink'}, 'padding-top': 15}],
             tooltip_data=[{'fundManagerunique': x} for x in gen_summary_data()['fundManagerunique']],
             tooltip_duration=None,

@@ -7,8 +7,6 @@ read_idx_files():
     - opens new idx files and adds NPORT filing urls to master_urls.pkl
 gen_ncen():
     - opens all idx files and adds all NCEN filings urls to master_ncens.pkl
-gen_allfiles():
-    - opens lal idx files and adds all filing urls to all_filings.pkl
 
 # TO DO Combine gen_ncen with read_idx_files into one script
 
@@ -69,7 +67,7 @@ def read_idx_files():
 
             print('Done loading', filename)
 
-    master_urls.drop_duplicates(inplace=True, ignore_index=True)
+    master_urls.drop_duplicates(subset=['filingURL'], inplace=True, ignore_index=True)
     master_urls.to_pickle(urlfilename)
     ignorelist.to_csv(ignorefile, index=False)
 
@@ -105,40 +103,8 @@ def gen_ncen():
 
             print('Done loading', filename)
 
-    master_ncens.drop_duplicates(inplace=True, ignore_index=True)
+    master_ncens.drop_duplicates(subset=['filingURL'], inplace=True, ignore_index=True)
     master_ncens.to_pickle(ncen_filename)
-
-
-def gen_allfiles():
-
-    allfilename = 'filings/all_filings.pkl'
-    urlbegin = 'https://www.sec.gov/Archives/'
-
-    master_dir = os.getcwd().replace('\\', '/') + '/filings'
-
-    for filename in os.listdir(master_dir):
-
-        if filename[-3:]=='idx':
-
-            #  Read in idx file
-            print(filename)
-            tmp = pd.read_table('filings/'+filename)
-            tmp = tmp[6:]
-            tmp = tmp.iloc[:, 0].str.split('|', expand=True)
-            colmap = {0: 'CIK', 1: 'company_name', 2: 'form_type', 3: 'fileDate', 4: 'filingURL'}
-            tmp.rename(columns=colmap, inplace=True)
-
-            # if final file for each quarter, append to all_filings and add to ignorelist
-            if len(filename) == 14:
-                # master____.idx (i.e. does not have _todate in name)
-                # don't want to drop duplicates everytime for this database
-                all_filings = pd.read_pickle(allfilename)
-                all_filings = all_filings.append(tmp)
-                all_filings.drop_duplicates(inplace=True, ignore_index=True)
-                all_filings.to_pickle(allfilename)
-
-            print('Done loading', filename)
-
 
 
 def main():

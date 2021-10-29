@@ -7,6 +7,7 @@ Quarterly / Monthly
 3. Run get_sec_data
 4. Run get_cb_data
 5. Run select_data
+*. If necessary, change search terms in master_unicorns.xlsx and rerun select_data
 
 Annual
 1. Download latest SEC mutual fund Excel file **needs work to automate here
@@ -18,7 +19,9 @@ After running updates:
 
 """
 
+
 import datetime
+
 
 def run_monthly():
     import load_urls
@@ -28,9 +31,20 @@ def run_monthly():
 
     # this should always be updated to roughly 5 months prior to current date
     # filings due 60 days after quarter end - so anything older than 5 months shouldn't be most recent data point anymore
-    cutoffdate = datetime.date(2021, 5, 31)
+    CUTOFFDATE = datetime.date(2021, 5, 31)
 
     load_urls.main()
     get_sec_data.main()
     get_cb_data.main()
-    select_data.main(cutoffdate)
+    select_data.main(CUTOFFDATE)
+
+
+def run_annually():
+    ''' NEED TO COMPLETE THIS LATER'''
+    print('todo')
+
+
+if __name__ == "__main__":
+
+    if True:
+        run_monthly()

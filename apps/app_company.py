@@ -60,12 +60,10 @@ def gen_table_format():
     return dt_cols
 
 
-unicornsfilename = 'data/master_unicorns.xlsx'
-master_unicorns = pd.read_excel(unicornsfilename)
-master_unicorns = master_unicorns.where(pd.notnull(master_unicorns), None)
+unicornsfilename = 'data/unicorn_summary.pkl'
+unicorn_summary = pd.read_pickle(unicornsfilename)
+unicornset = unicorn_summary['unicorn']
 
-
-unicornset = master_unicorns.loc[0:30,'Company Name'] #CHANGE HERE to SUMMARY PKL
 unicorn_data = pd.read_pickle('data/unicorn_data.pkl')
 havedata = set(unicorn_data['unicorn'].str.lower())
 
