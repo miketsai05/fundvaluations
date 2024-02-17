@@ -1,0 +1,56 @@
+repos:
+  - repo: "https://github.com/pre-commit/pre-commit-hooks"
+    rev: v4.4.0
+    hooks:
+      - id: check-added-large-files
+        name: check for added large files (500kB)
+      - id: check-docstring-first
+        name: check that docstrings come before code
+      - id: check-executables-have-shebangs
+        name: non-binary executables have a proper shebang
+      - id: check-json
+        name: json syntax is valid
+      - id: check-merge-conflict
+        args: ["--assume-in-merge"]
+        name: check for files that contain merge conflict strings
+      - id: check-shebang-scripts-are-executable
+        name: scripts with shebangs are executable
+      - id: check-yaml
+        name: yaml syntax is valid
+      - id: debug-statements
+        name: debugger imports and breakpoint calls (python)
+      - id: detect-private-key
+        name: detect private keys
+      - id: end-of-file-fixer
+        name: fix end of files
+      - id: fix-byte-order-marker
+        name: fix utf-8 byte order markers
+      - id: mixed-line-ending
+        name: mixed line endings
+      - id: name-tests-test
+        args: ["--pytest-test-first"]
+        name: verify that test files are named correctly
+      - id: no-commit-to-branch
+        args: ["--branch", "master", "--branch", "main"]
+        name: prevent committing directly to main or master
+      - id: pretty-format-json
+        name: pretty format json
+        exclude: .*\.ipynb$
+      - id: trailing-whitespace
+        name: trim trailing whitespace
+
+  - repo: "https://github.com/pycqa/isort"
+    rev: "5.12.0"
+    hooks:
+      - args: ["--profile", "black", "--filter-files"]
+        id: isort
+        name: sort imports (python)
+
+  - repo: "https://github.com/psf/black"
+    rev: "23.1.0"
+    hooks:
+      - id: black
+  - repo: https://github.com/pycqa/flake8
+    rev: 6.0.0
+    hooks:
+      - id: flake8
