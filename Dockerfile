@@ -11,4 +11,8 @@ WORKDIR /app/
 COPY requirements.txt /app/
 RUN \
     # Install requirements
-    pip install -r requirements.txt \
+    pip install -r requirements.txt
+
+COPY . ./
+
+CMD gunicorn -b 0.0.0.0:9000 index:server

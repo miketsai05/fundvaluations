@@ -11,3 +11,4 @@ app = dash.Dash(
     title="Fund Valuations",
 )
 server = app.server
+app.config.suppress_callback_exceptions = True

@@ -2,7 +2,7 @@ import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output
 
-from app import app
+from app import app, server  # noqa
 from apps import app_about, app_company, app_search, app_summary
 
 app.layout = html.Div(

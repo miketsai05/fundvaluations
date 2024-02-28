@@ -1,0 +1,15 @@
+x-common-app-server: &x-common-app-server
+  environment:
+    AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+    AWS_ACCESS_KEY_ID_FINANCE: ${AWS_ACCESS_KEY_ID_FINANCE}
+    AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+    AWS_SECRET_ACCESS_KEY_FINANCE: ${AWS_SECRET_ACCESS_KEY_FINANCE}
+    CAPIQ_ID: ${CAPIQ_ID}
+    CAPIQ_KEY: ${CAPIQ_KEY}
+    DASH_USERNAME: ${DASH_USERNAME}
+    DASH_PASSWORD: ${DASH_PASSWORD}
+    DOPPLER_ENVIRONMENT: ${DOPPLER_ENVIRONMENT}
+    GUNICORN_CMD_ARGS: "--bind=0.0.0.0:8050 --reload"
+  image: teamshares-finance
+  networks:
+    - teamshares
