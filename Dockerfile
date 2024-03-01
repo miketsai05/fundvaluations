@@ -12,5 +12,3 @@ COPY requirements.txt /app/
 RUN \
     # Install requirements
     pip install -r requirements.txt
-
-COPY . ./

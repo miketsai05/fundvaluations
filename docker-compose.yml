@@ -13,7 +13,7 @@ services:
     ports: ["9101:9050"]
     image: fundvaluations
     volumes:
-      - ./apps:/app/apps
+      - ./:/app
 
   jupyter-server:
     command: >
