@@ -1,15 +1,54 @@
-x-common-app-server: &x-common-app-server
-  environment:
-    AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
-    AWS_ACCESS_KEY_ID_FINANCE: ${AWS_ACCESS_KEY_ID_FINANCE}
-    AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
-    AWS_SECRET_ACCESS_KEY_FINANCE: ${AWS_SECRET_ACCESS_KEY_FINANCE}
-    CAPIQ_ID: ${CAPIQ_ID}
-    CAPIQ_KEY: ${CAPIQ_KEY}
-    DASH_USERNAME: ${DASH_USERNAME}
-    DASH_PASSWORD: ${DASH_PASSWORD}
-    DOPPLER_ENVIRONMENT: ${DOPPLER_ENVIRONMENT}
-    GUNICORN_CMD_ARGS: "--bind=0.0.0.0:8050 --reload"
-  image: teamshares-finance
-  networks:
-    - teamshares
+version: "3.8"
+
+services:
+  dash-app:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    container_name: valuations-app
+    ports: ["9101:9000"]
+    image: fundvaluations
+    volumes:
+      - ./apps:/app/apps
+
+  jupyter-server:
+    command: >
+      /bin/bash -c '
+        jupyter labextension \
+          disable "@jupyterlab/apputils-extension:announcements"
+        jupyter lab \
+          --ip 0.0.0.0 \
+          --no-browser \
+          --allow-root \
+          --NotebookApp.token "" \
+          --NotebookApp.password ""
+      '
+    container_name: jupyter-server
+    ports: ["9102:8888"]
+    image: fundvaluations
+    depends_on: [dash-app]
+    volumes:
+      - ./:/app
+
+  valuations-db:
+    build: ./data/db/
+    command: [ "postgres", "-c", "log_statement=all" ]
+    container_name: valuations-db
+    env_file: .env
+    environment:
+      POSTGRES_DB: ${LOCAL_DB_NAME}
+      POSTGRES_PASSWORD: ${LOCAL_DB_PASSWORD}
+      POSTGRES_USER: ${LOCAL_DB_USER}
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -d ${LOCAL_DB_NAME} -U ${LOCAL_DB_USER}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    image: valuations-db
+    init: true
+    ports: [ "9100:5432" ]
+    volumes:
+      - valuations-db:/data/db
+
+volumes:
+  valuations-db:
