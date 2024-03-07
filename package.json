@@ -1,0 +1,13 @@
+{
+  "description": "Convenient wrapper for some helpful dev scripts",
+  "engines": {
+    "node": "18.17.0"
+  },
+  "name": "fundvaluations",
+  "private": true,
+  "scripts": {
+    "down": "docker-compose down -v",
+    "lint": "black .",
+    "up": "docker-compose up -d --build"
+  }
+}

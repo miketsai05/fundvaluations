@@ -24,13 +24,15 @@ import datetime
 
 
 def run_monthly():
-    import load_urls
-    import get_sec_data
     import get_cb_data
+    import get_sec_data
+    import load_urls
+
     import select_data
 
     # this should always be updated to roughly 5 months prior to current date
-    # filings due 60 days after quarter end - so anything older than 5 months shouldn't be most recent data point anymore
+    # filings due 60 days after quarter end - so anything older than 5 months shouldn't be
+    #                                             most recent data point anymore
     CUTOFFDATE = datetime.date(2021, 5, 31)
 
     load_urls.main()
@@ -40,11 +42,10 @@ def run_monthly():
 
 
 def run_annually():
-    ''' NEED TO COMPLETE THIS LATER'''
-    print('todo')
+    """NEED TO COMPLETE THIS LATER"""
+    print("todo")
 
 
 if __name__ == "__main__":
-
     if True:
         run_monthly()

@@ -1,0 +1,109 @@
+#!/usr/bin/env bash
+
+BG="\e[104m"
+TEXT="\e[97m"
+GREEN="\e[32m"
+RED="\e[91m"
+ENDCOLOR="\e[0m"
+BOLD_STYLE="\033[1m"
+NORMAL_STYLE="\033[0m"
+
+say () {
+  printf "${BG}${TEXT} -- $1 -- ${ENDCOLOR}"
+  printf "\n\n"
+}
+
+abort_if_not_installed () {
+  tool=$1
+  installation_instructions_url=$2
+  if (command -v $1 &> /dev/null); then
+    printf " ☑️   ${BOLD_STYLE}${tool}${NORMAL_STYLE} is already installed.\n"
+  else
+    printf "\n${RED}"
+    printf " ❌  ${BOLD_STYLE}${tool}${NORMAL_STYLE}${RED} not found.\n"
+    printf "     You'll need to install it before proceeding: \n"
+    printf "     - ${installation_instructions_url}\n"
+    printf "${ENDCOLOR}"
+    exit 1
+  fi
+}
+
+get_tool_version () {
+  version=""
+
+  while read -r line; do
+    if [[ "$line" =~ .*"$1".* ]]; then
+      version=${line#"$1"}
+    fi
+  done < "./.tool-versions"
+
+  if [ "$version" = "" ]; then
+    printf "\n${RED}ERROR: $1 not found in .tool-versions${ENDCOLOR}\n\n"
+    exit 1
+  else
+    echo "$version"
+  fi
+}
+
+configure_asdf_plugin () {
+  printf "${BOLD_STYLE} 🧩  Configuring asdf plugin $1...${NORMAL_STYLE}\n\n"
+  asdf plugin add $1
+  asdf plugin update $1
+  asdf install $1 $(get_tool_version $1)
+  asdf local $1 $(get_tool_version $1)
+  asdf reshim $1
+  printf "\n"
+}
+
+check_asdf_shim () {
+  if [ "$(which $1)" -ef "$(realpath ~/.asdf/shims/$1)" ]; then
+    printf "${GREEN}"
+    printf " ✅  Successfully verified that $1 points to ~/.asdf/shims/$1.\n"
+    printf "${ENDCOLOR}"
+  else
+    printf "${RED}\n"
+    printf " ❌  There seems to be an issue with the asdf shim for $1.\n"
+    printf "     Please fix the shim and run this script again.\n"
+    printf "${ENDCOLOR}"
+    exit 1
+  fi
+}
+
+printf "${GREEN}Running the setup script for the fundvaluations repo\n\n${ENDCOLOR}"
+
+say "Checking for prerequisites"
+abort_if_not_installed asdf https://asdf-vm.com/
+abort_if_not_installed docker https://docs.docker.com/desktop/install/mac-install/
+#abort_if_not_installed heroku https://devcenter.heroku.com/articles/heroku-cli
+printf "\n"
+
+#say "Ensure a git remote exists for Heroku"
+#heroku git:remote -a fundvaluations
+
+say "Configuring asdf plugins"
+configure_asdf_plugin nodejs
+configure_asdf_plugin python
+
+say "Verifying asdf shims"
+check_asdf_shim node
+check_asdf_shim python
+printf "\n"
+
+say "Installing python dev dependencies"
+python -m pip install --upgrade pip
+python -m pip install -r requirements-dev.txt
+asdf reshim python
+printf "\n"
+
+say "Setting up pre-commit hooks"
+pre-commit install
+printf "\n"
+
+say "Setting up yarn shortcuts"
+printf "${BOLD_STYLE} 🧶  Updating npm...${NORMAL_STYLE}\n"
+npm install -g npm@latest --no-fund
+printf "\n${BOLD_STYLE} 🧶  Installing yarn...${NORMAL_STYLE}\n"
+npm install -g yarn
+printf "\n"
+
+printf "\n${GREEN} 🐍  Good to go!${ENDCOLOR}\n"
